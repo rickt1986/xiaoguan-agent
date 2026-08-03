@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>销冠智能体 · 训练营顾问AI系统</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22263a;
+  --border: #2a2e3f;
+  --text: #e2e4ec;
+  --text2: #9096a8;
+  --accent: #6c5ce7;
+  --accent2: #a78bfa;
+  --green: #10b981;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --blue: #3b82f6;
+  --cyan: #06b6d4;
+  --gold: #fbbf24;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app { display: flex; height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.logo h1 {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.logo .sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+.nav { flex: 1; padding: 0 12px; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.2s;
+  font-size: 14px; color: var(--text2);
+  margin-bottom: 4px;
+}
+
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+.nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.sidebar-footer .stat { display: flex; justify-content: space-between; margin: 4px 0; }
+.sidebar-footer .stat span:last-child { color: var(--accent2); font-weight: 600; }
+
+.sidebar-settings {
+  padding: 8px 20px; border-top: 1px solid var(--border);
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text2); transition: all 0.2s;
+}
+.sidebar-settings:hover { color: var(--text); background: var(--surface2); }
+.sidebar-settings .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.sidebar-settings .status-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.sidebar-settings .status-dot.offline { background: var(--text2); }
+
+/* Settings Modal */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6); z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; width: 480px; max-width: 90vw;
+  box-shadow: var(--shadow);
+}
+.modal h3 { font-size: 16px; margin-bottom: 20px; }
+.modal label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 6px; font-weight: 600; }
+.modal input[type="text"], .modal input[type="password"] {
+  width: 100%; background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; margin-bottom: 16px;
+  font-family: inherit;
+}
+.modal input:focus { outline: none; border-color: var(--accent); }
+.modal .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+.modal .status-msg { font-size: 12px; padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 12px; }
+.modal .status-msg.success { background: rgba(16,185,129,0.15); color: var(--green); }
+.modal .status-msg.error { background: rgba(239,68,68,0.15); color: var(--red); }
+.modal .status-msg.info { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+/* Loading */
+.loading-indicator {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--text2); padding: 4px 0;
+}
+.loading-dots { display: inline-flex; gap: 3px; }
+.loading-dots span {
+  width: 5px; height: 5px; background: var(--accent2); border-radius: 50%;
+  animation: dotPulse 1.2s infinite;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 20px;
+  font-size: 13px; box-shadow: var(--shadow);
+  animation: fadeIn 0.2s ease;
+}
+
+/* Main */
+.main { flex: 1; overflow-y: auto; padding: 24px 32px; }
+
+/* Panels */
+.panel { display: none; }
+.panel.active { display: block; }
+
+.panel-header { margin-bottom: 24px; }
+.panel-header h2 { font-size: 22px; font-weight: 700; }
+.panel-header p { color: var(--text2); font-size: 13px; margin-top: 4px; }
+
+/* Cards */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+
+.stat-card .label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card .value { font-size: 28px; font-weight: 700; margin: 8px 0 4px; }
+.stat-card .change { font-size: 12px; }
+.stat-card .change.up { color: var(--green); }
+.stat-card .change.down { color: var(--red); }
+
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+
+.chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+
+/* Bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label { width: 90px; font-size: 12px; color: var(--text2); text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; height: 24px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; }
+.bar-fill.blue { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+.bar-fill.orange { background: linear-gradient(90deg, var(--orange), #fbbf24); }
+
+/* Training Mode */
+.training-layout { display: grid; grid-template-columns: 1fr 400px; gap: 20px; height: calc(100vh - 140px); }
+
+.chat-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden;
+}
+
+.chat-panel-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+
+.chat-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; color: #1a1d27;
+}
+
+.chat-panel-header .info h4 { font-size: 14px; }
+.chat-panel-header .info span { font-size: 11px; color: var(--text2); }
+
+.chat-scenario { margin-left: auto; }
+.chat-scenario select {
+  background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 6px 12px; font-size: 12px; cursor: pointer;
+}
+
+.chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+.msg { max-width: 80%; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.7; }
+.msg.parent { align-self: flex-start; background: var(--surface2); border-bottom-left-radius: 4px; }
+.msg.advisor { align-self: flex-end; background: var(--accent); border-bottom-right-radius: 4px; }
+.msg.system { align-self: center; background: transparent; color: var(--text2); font-size: 11px; padding: 4px 12px; }
+.msg .role { font-size: 10px; font-weight: 600; margin-bottom: 4px; opacity: 0.7; }
+
+.chat-input-area {
+  padding: 16px 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px;
+}
+
+.chat-input-area textarea {
+  flex: 1; background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px; font-size: 13px; resize: none;
+  font-family: inherit; min-height: 60px;
+}
+.chat-input-area textarea::placeholder { color: var(--text2); }
+.chat-input-area textarea:focus { outline: none; border-color: var(--accent); }
+
+.chat-input-area button {
+  background: var(--accent); color: #fff; border: none;
+  border-radius: var(--radius-sm); padding: 12px 24px;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.chat-input-area button:hover { background: #7c6df0; }
+.chat-input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Side Panel */
+.side-panel {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.score-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+
+.score-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+
+.score-ring {
+  width: 80px; height: 80px; margin: 0 auto 12px;
+  position: relative; display: flex; align-items: center; justify-content: center;
+}
+
+.score-ring svg { width: 80px; height: 80px; transform: rotate(-90deg); }
+.score-ring .score-text { position: absolute; font-size: 24px; font-weight: 700; }
+
+.score-details { display: flex; flex-direction: column; gap: 8px; }
+.score-row { display: flex; justify-content: space-between; font-size: 12px; }
+.score-row .dim { color: var(--text2); }
+.score-row .val { font-weight: 600; }
+.score-row .val.good { color: var(--green); }
+.score-row .val.warn { color: var(--orange); }
+.score-row .val.bad { color: var(--red); }
+
+.score-feedback {
+  font-size: 11px; color: var(--accent2); margin-top: 10px; padding: 10px;
+  background: var(--surface2); border-radius: var(--radius-sm); line-height: 1.6;
+}
+
+.strategy-hint {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; flex: 1; overflow-y: auto;
+}
+
+.strategy-hint h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.hint-item {
+  background: var(--surface2); border-radius: var(--radius-sm); padding: 12px;
+  margin-bottom: 8px; font-size: 12px; line-height: 1.6;
+}
+.hint-item .hint-type { font-size: 10px; color: var(--accent2); font-weight: 600; }
+.hint-item .hint-text { color: var(--text); margin-top: 4px; }
+
+.btn-row { display: flex; gap: 8px; margin-top: 8px; }
+
+.btn {
+  padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px;
+  font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+}
+
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-outline { background: transparent; color: var(--accent2); border: 1px solid var(--accent); }
+
+/* Suggestion Mode */
+.suggestion-layout { display: grid; grid-template-columns: 1fr 400px; gap: 20px; height: calc(100vh - 140px); }
+
+.context-input {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.context-input label { font-size: 12px; font-weight: 600; color: var(--text2); }
+.context-input textarea {
+  flex: 1; background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px; font-size: 13px; resize: none;
+  font-family: inherit; min-height: 120px;
+}
+.context-input textarea:focus { outline: none; border-color: var(--accent); }
+.context-input .btn-row { justify-content: flex-end; }
+
+.suggestions-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; overflow-y: auto;
+}
+
+.suggestions-panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+
+.suggestion-card {
+  background: var(--surface2); border-radius: var(--radius-sm); padding: 14px;
+  margin-bottom: 12px; border-left: 3px solid var(--accent);
+}
+
+.suggestion-card .sug-rank { font-size: 10px; color: var(--accent2); font-weight: 600; }
+.suggestion-card .sug-strategy { font-size: 11px; color: var(--gold); font-weight: 600; margin: 4px 0; }
+.suggestion-card .sug-text { font-size: 13px; line-height: 1.7; color: var(--text); }
+.suggestion-card .sug-meta { font-size: 10px; color: var(--text2); margin-top: 6px; }
+
+/* Knowledge Base */
+.kb-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; height: calc(100vh - 140px); }
+
+.kb-sidebar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; overflow-y: auto;
+}
+
+.kb-search { margin-bottom: 16px; }
+.kb-search input {
+  width: 100%; background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px;
+}
+.kb-search input:focus { outline: none; border-color: var(--accent); }
+
+.kb-category {
+  padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 13px; color: var(--text2); margin-bottom: 4px; transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.kb-category:hover { background: var(--surface2); color: var(--text); }
+.kb-category.active { background: var(--accent); color: #fff; }
+.kb-category .count { margin-left: auto; font-size: 11px; opacity: 0.7; }
+
+.kb-content {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; overflow-y: auto;
+}
+
+.kb-item {
+  background: var(--surface2); border-radius: var(--radius-sm); padding: 16px;
+  margin-bottom: 12px; border-left: 3px solid var(--accent);
+}
+
+.kb-item .kb-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 10px; font-weight: 600; margin-right: 6px;
+}
+
+.kb-item .kb-tag.strategy { background: rgba(139, 92, 246, 0.2); color: var(--accent2); }
+.kb-item .kb-tag.qa { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+.kb-item .kb-tag.script { background: rgba(59, 130, 246, 0.2); color: var(--blue); }
+
+.kb-item .kb-title { font-size: 14px; font-weight: 600; margin: 8px 0; }
+.kb-item .kb-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+/* Badge */
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 600;
+}
+.badge.high { background: rgba(16,185,129,0.2); color: var(--green); }
+.badge.mid { background: rgba(245,158,11,0.2); color: var(--orange); }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.msg { animation: fadeIn 0.3s ease; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <h1>🎯 销冠智能体</h1>
+      <div class="sub">训练营顾问AI系统 v2.0</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" data-panel="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        数据总览
+      </div>
+      <div class="nav-item" data-panel="training">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+        AI陪练
+      </div>
+      <div class="nav-item" data-panel="suggestion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        实时建议
+      </div>
+      <div class="nav-item" data-panel="knowledge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        知识库
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="stat"><span>蒸馏数据量</span><span>5,063条</span></div>
+      <div class="stat"><span>覆盖顾问</span><span>20位</span></div>
+      <div class="stat"><span>话术模板</span><span>21条</span></div>
+      <div class="stat"><span>策略卡片</span><span>6张</span></div>
+    </div>
+    <div class="sidebar-settings" onclick="openSettings()" id="settingsBtn">
+      <span class="status-dot" id="apiStatusDot"></span>
+      <span id="apiStatusLabel">Qwen3.6 · 点击配置</span>
+    </div>
+  </aside>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" style="display:none" onclick="if(event.target===this) closeSettings()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3>⚙️ 模型配置</h3>
+      <label>API 地址</label>
+      <input type="text" id="settingEndpoint" value="http://localhost:3456/api/chat" readonly>
+      <label>模型名称</label>
+      <input type="text" id="settingModel" value="Qwen/Qwen3.6-35B-A3B" readonly>
+      <label>API Key</label>
+      <input type="password" id="settingApiKey" placeholder="sk-...">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:8px 0">
+        <input type="checkbox" id="settingCorsProxy" style="width:auto;accent-color:var(--accent)">
+        <span>启用 CORS 代理 (公网部署时需开启)</span>
+      </label>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="testConnection()">测试连接</button>
+        <button class="btn btn-secondary" onclick="closeSettings()">取消</button>
+        <button class="btn btn-primary" onclick="saveSettings()">保存配置</button>
+      </div>
+      <div id="settingStatus"></div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main" id="mainContent">
+    <!-- Dashboard -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="panel-header">
+        <h2>📊 数据总览</h2>
+        <p>基于5,063条A级精华通话数据蒸馏的知识库概览 · 搭载 Qwen3.6-35B-A3B</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="label">A级通话总量</div>
+          <div class="value">5,063</div>
+          <div class="change up">▲ 覆盖20位Top顾问</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">成交通话</div>
+          <div class="value">1,651</div>
+          <div class="change up">▲ 成交率 32.6%</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">蒸馏话术模板</div>
+          <div class="value">21</div>
+          <div class="change up">▲ 涵盖7大异议场景</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">策略卡片</div>
+          <div class="value">6</div>
+          <div class="change up">▲ 覆盖全销售流程</div>
+        </div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>成交 vs 未成交 阶段差异</h3>
+          <div class="bar-chart" id="stageChart"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Top顾问 高价值通话量</h3>
+          <div class="bar-chart" id="advisorChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Training Mode -->
+    <div class="panel" id="panel-training">
+      <div class="panel-header">
+        <h2>🎤 AI陪练 <span style="font-size:11px;color:var(--accent2);font-weight:400">· Qwen3.6 驱动</span></h2>
+        <p>模拟真实家长对话（AI生成），实时四维评分反馈，打磨你的销售话术</p>
+      </div>
+      <div class="training-layout">
+        <div class="chat-panel">
+          <div class="chat-panel-header">
+            <div class="chat-avatar">家</div>
+            <div class="info">
+              <h4 id="parentName">李妈妈</h4>
+              <span id="parentProfile">初一学生家长 · 成绩中等 · 对补习有顾虑</span>
+            </div>
+            <div class="chat-scenario">
+              <select id="scenarioSelect" onchange="changeScenario()">
+                <option value="cold_call">陌拜首Call</option>
+                <option value="price_objection">价格异议处理</option>
+                <option value="effect_objection">效果疑虑</option>
+                <option value="closing">促成关单</option>
+                <option value="competitor_compare">竞品对比</option>
+              </select>
+            </div>
+          </div>
+          <div class="chat-messages" id="trainingMessages"></div>
+          <div class="chat-input-area">
+            <textarea id="trainingInput" placeholder="输入你的回应...（按 Enter 发送）" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTraining();}"></textarea>
+            <button onclick="sendTraining()" id="sendBtn">发送 ➤</button>
+          </div>
+        </div>
+        <div class="side-panel">
+          <div class="score-card">
+            <h3>📈 本轮评分 <span style="font-size:10px;color:var(--text2);font-weight:400">AI评估</span></h3>
+            <div class="score-ring" id="scoreRing">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#2a2e3f" stroke-width="8"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#gradeGrad)" stroke-width="8" stroke-linecap="round" id="scoreCircle"/>
+                <defs><linearGradient id="gradeGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs>
+              </svg>
+              <span class="score-text" id="scoreText">--</span>
+            </div>
+            <div class="score-details">
+              <div class="score-row"><span class="dim">共情能力</span><span class="val" id="sEmpathy">--</span></div>
+              <div class="score-row"><span class="dim">策略匹配</span><span class="val" id="sStrategy">--</span></div>
+              <div class="score-row"><span class="dim">推动成交</span><span class="val" id="sClose">--</span></div>
+              <div class="score-row"><span class="dim">语言流畅</span><span class="val" id="sClarity">--</span></div>
+            </div>
+            <div class="score-feedback" id="scoreFeedback" style="display:none"></div>
+          </div>
+          <div class="strategy-hint" id="strategyHints">
+            <h3>💡 策略提示</h3>
+            <div class="hint-item">
+              <div class="hint-type">推荐策略</div>
+              <div class="hint-text">先做需求挖掘，了解孩子具体的学习痛点后再推荐方案</div>
+            </div>
+            <div class="hint-item">
+              <div class="hint-type">参考话术</div>
+              <div class="hint-text">"孩子现在各科成绩怎么样？哪一科感觉最吃力？"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggestion Mode -->
+    <div class="panel" id="panel-suggestion">
+      <div class="panel-header">
+        <h2>⚡ 实时建议引擎 <span style="font-size:11px;color:var(--accent2);font-weight:400">· GLM-5.2 + 知识库</span></h2>
+        <p>输入当前对话上下文，AI自动匹配最优话术和策略</p>
+      </div>
+      <div class="suggestion-layout">
+        <div class="context-input">
+          <label>📝 对话上下文</label>
+          <textarea id="contextInput" placeholder="将家长最近几轮对话粘贴到这里……
+
+例如：
+【家长】你们这个课多少钱？
+【家长】我看了下其他机构好像便宜不少
+【家长】而且我也不确定孩子愿不愿意学…"></textarea>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="loadDemoSuggestion()">加载示例</button>
+            <button class="btn btn-primary" onclick="getSuggestions()" id="suggestBtn">获取建议 →</button>
+          </div>
+        </div>
+        <div class="suggestions-panel" id="suggestionsPanel">
+          <h3>🎯 AI建议</h3>
+          <div style="color: var(--text2); font-size: 12px; text-align: center; padding: 40px 0;" id="suggestPlaceholder">
+            输入对话上下文后，点击"获取建议"查看AI匹配的最优话术
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Knowledge Base -->
+    <div class="panel" id="panel-knowledge">
+      <div class="panel-header">
+        <h2>📚 知识库</h2>
+        <p>浏览全部蒸馏知识：场景、话术、策略、QA对</p>
+      </div>
+      <div class="kb-layout">
+        <div class="kb-sidebar">
+          <div class="kb-search">
+            <input type="text" placeholder="搜索知识库..." oninput="filterKB(this.value)" id="kbSearch">
+          </div>
+          <div id="kbCategories"></div>
+        </div>
+        <div class="kb-content" id="kbContent"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ============================================================
+// API CONFIGURATION
+// ============================================================
+const DEFAULT_API_KEY = '';
+const DEFAULT_ENDPOINT = 'http://localhost:3456/api/chat';
+const DEFAULT_MODEL = 'Qwen/Qwen3.6-35B-A3B';
+
+function getApiConfig() {
+  return {
+    endpoint: localStorage.getItem('sf_endpoint') || DEFAULT_ENDPOINT,
+    model: localStorage.getItem('sf_model') || DEFAULT_MODEL,
+    apiKey: localStorage.getItem('sf_api_key') || DEFAULT_API_KEY,
+    corsProxy: localStorage.getItem('sf_cors_proxy') === 'true',
+    enabled: !!(localStorage.getItem('sf_api_key') || DEFAULT_API_KEY)
+  };
+}
+
+function getFetchUrl(config) {
+  const base = config.endpoint;
+  if (config.corsProxy) {
+    return `https://corsproxy.io/?${encodeURIComponent(base)}`;
+  }
+  return base;
+}
+
+function saveApiConfig(key, model, corsProxy) {
+  localStorage.setItem('sf_api_key', key);
+  localStorage.setItem('sf_model', model || DEFAULT_MODEL);
+  localStorage.setItem('sf_endpoint', DEFAULT_ENDPOINT);
+  localStorage.setItem('sf_cors_proxy', corsProxy ? 'true' : 'false');
+  updateApiStatus();
+  showToast('配置已保存', 'success');
+  closeSettings();
+}
+
+async function callLLM(messages, options = {}) {
+  const config = getApiConfig();
+  if (!config.apiKey) throw new Error('未配置API Key');
+
+  const { temperature = 0.7, maxTokens = 1024, topP = 0.9 } = options;
+
+  const response = await fetch(getFetchUrl(config), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey}`
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      top_p: topP,
+      stream: false
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`API请求失败 (${response.status}): ${err.slice(0,200)}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+
+// ============================================================
+// KNOWLEDGE BASE (embedded from distilled_knowledge.json)
+// ============================================================
+const KB = {
+  scenarios: [
+    {id:"cold_call",name:"陌拜首Call",desc:"首次接触家长，建立信任、挖掘需求"},
+    {id:"follow_up",name:"跟进复Call",desc:"二次或多次跟进，推进成交"},
+    {id:"trial_invite",name:"试听课邀约",desc:"邀请家长/学生参加试听或体验课"},
+    {id:"price_objection",name:"价格异议处理",desc:"应对家长对价格的顾虑"},
+    {id:"effect_objection",name:"效果异议处理",desc:"应对家长对教学效果的疑虑"},
+    {id:"competitor_compare",name:"竞品对比",desc:"与其他机构的对比话术"},
+    {id:"closing",name:"促成关单",desc:"推动成交的核心话术"},
+    {id:"post_sale",name:"售后跟进",desc:"成交后的服务和二次转化"}
+  ],
+  opening: [
+    {script:"诶你好你好，是雨田家长吧，我不是付老师，付老师委托我说就针对上海这个地区，和您就那个教学做一个沟通，您这边应该知道吧。",advisor:"傅行02"},
+    {script:"喂，雨辰妈妈老师您好，就是我看到您说您想报那个5科哈，有一个问题，其实是现在最主要的一个问题是时间问题，您知道吧，我其实并不害怕孩子或者说咱们的家长他不选择我们的这个课程，孩子愿意学，但现在的问题是时间的问题。",advisor:"温晓云"},
+    {script:"唉你好宝贝妈妈，我是付老师，对我刚刚有在看，你在那个群里问了一下4科和5科，你对于这个科目你知道是怎么样安排的吗？",advisor:"傅行02"},
+  ],
+  closing: [
+    {script:"如果说咱孩子的话，现在是全科一起是最优惠的，我给您发一下。",advisor:"黄强02"},
+    {script:"因为优秀的师资，所以就是现在要去进行一个提前报名，我先给您安排进A班先报上。",advisor:"黄强02"},
+  ],
+  objection: {
+    "价格贵": ["您报名的话，走的是高途官方的报名通道，我给您创建订单，所以说对于孩子而言的话，这个学费已经是最优惠的了。","它是暑秋都包含在内的，知道吧？暑秋加起来这么多节课，平均下来一节课就很划算了。"],
+    "没时间": ["您这会儿在忙是吧，那这样子我晚上跟您沟通吧，您晚上几点方便？","完全理解！线上课时间很灵活的，而且还有回放，不用担心错过。"],
+    "跟孩子商量": ["您把孩子叫过来，我跟他一起确认嘛，问问他喜欢周六还是周天上课。","没问题，肯定要跟孩子商量的。不过名额有限，家长可以先付个定金锁定名额。"],
+    "怕没效果": ["您让孩子再听听物理课，看他自己的意愿度。我们的课程内容您看，暑假8次课高密度训练，帮孩子把概念具象化。","家长这个担心很正常。其实咱们训练营很多孩子来的时候成绩不理想，经过一个学期提升特别明显。"],
+    "再考虑": ["好好没问题。不过我想提醒一下，咱们这批名额到今天就截止了，优惠活动也是限时的。","理解理解，确实需要慎重。要不您先锁个名额，如果不合适随时可以退。"],
+    "对比其他": ["您还踩过不少雷呢。咱们高途最大的优势是小班教学+双师模式，主讲老师都是名校毕业的。","家长很用心！每家机构有特色。我们是全程跟进服务的，不是交完钱就不管了。"],
+    "怕跟不上": ["物理分为声、光、力、热电五大板块，各板块互不影响。我们核心导向是解决中考性问题，基础差的部分我们也兜底。","这个完全不用担心！我们是分层教学的，每节课还有辅导老师专门答疑，保证孩子能跟上。"],
+  },
+  qa: [
+    {q:"家长说太贵了",a:"理解家长的顾虑。咱们算一下，一节课平均下来也没多少钱。更重要的是现在报名有优惠，错过就恢复原价了。"},
+    {q:"家长说没时间",a:"线上直播还能看回放，时间很灵活。一周也就两次课，每次一小时，不会占用太多时间。"},
+    {q:"家长说跟孩子商量一下",a:"没问题，肯定要商量的。不过名额真的有限，可以先付定金银锁定，不合适再退。"},
+    {q:"家长担心效果",a:"训练营已经办了多期，很多孩子来时成绩不理想，经过训练提升特别明显。我这边有真实反馈可以发给您。"},
+    {q:"家长说孩子不愿意",a:"现在不抓紧，等开学后跟不上班，那种挫败感更难受。先让孩子免费试听一节感受一下课堂氛围。"},
+    {q:"家长在对比其他机构",a:"咱们高途最大优势是小班教学+双师模式，主讲老师都是名校毕业，服务全程跟进。"},
+    {q:"家长担心孩子跟不上",a:"课程是分层教学的，根据孩子水平匹配班级。每节课有辅导老师答疑，保证能跟上。"},
+    {q:"家长说要回家再考虑",a:"理解。不过这批名额到今天下午就截止了，优惠也是限时的。要不您先锁上，回家再确认。"},
+  ],
+  strategies: [
+    {id:"pain_anchor",name:"痛点锚定法",desc:"先深挖孩子学习的具体痛点，建立情感共鸣，再引出解决方案",effect:"高",phrases:["成绩现在怎么样","哪一科比较薄弱","目标高中是哪个","家长是不是特别焦虑这个"]},
+    {id:"trial_door",name:"试听破冰法",desc:"不直接谈价格，先用免费试听课降低家长决策门槛",effect:"高",phrases:["先让孩子免费试听一下","感受一下老师的风格","不花钱先体验"]},
+    {id:"urgency_close",name:"紧迫感关单法",desc:"利用名额和时间的紧迫感推动成交",effect:"中高",phrases:["名额有限","今天截止","优惠就今天","再晚就没了"]},
+    {id:"mirror_method",name:"镜像共情法",desc:"用其他家长的类似案例建立共鸣，降低焦虑",effect:"高",phrases:["有个家长跟您一样","之前有个孩子也是","跟您情况很像的","刚开始也担心"]},
+    {id:"value_reframe",name:"价值重构法",desc:"将价格转化为每日/每节课的成本，降低价格敏感度",effect:"中",phrases:["平均到每天也就","一节课才","比一杯奶茶还便宜"]},
+    {id:"commitment_ladder",name:"承诺阶梯法",desc:"从小承诺开始逐步推进：加微信→试听→定金→全款",effect:"高",phrases:["先加个微信","先听听看","先锁个名额","不满意可以退"]},
+  ]
+};
+
+// ============================================================
+// STAGE DATA
+// ============================================================
+const stageData = [
+  {name:"开场寒暄", deal:99.5, nodeal:99.5, diff:-0.1},
+  {name:"需求挖掘", deal:79.8, nodeal:81.4, diff:-1.6},
+  {name:"痛点共鸣", deal:71.2, nodeal:53.3, diff:17.9},
+  {name:"方案介绍", deal:99.2, nodeal:98.7, diff:0.5},
+  {name:"异议处理", deal:79.3, nodeal:67.4, diff:11.8},
+  {name:"促成关单", deal:93.3, nodeal:86.1, diff:7.3},
+  {name:"售后跟进", deal:66.5, nodeal:48.2, diff:18.3},
+];
+
+const advisorData = [
+  {name:"温晓云", count:660},
+  {name:"胡继红", count:514},
+  {name:"周鑫26", count:504},
+  {name:"傅行02", count:355},
+  {name:"邓欢欢", count:329},
+  {name:"张晓燕07", count:317},
+  {name:"王军37", count:296},
+  {name:"钟月01", count:270},
+];
+
+// ============================================================
+// TRAINING SCENARIOS
+// ============================================================
+const scenarios = {
+  cold_call: {
+    parentName: "李妈妈",
+    profile: "初一学生家长 · 成绩中等偏下 · 对线上补习不了解",
+    personality: "initial_skeptical",
+    context: "你是李妈妈，初一学生家长。孩子成绩中等偏下，数学和英语不太好。你对线上补习班不太了解，接到这个陌生电话有些警惕，但又不完全排斥——毕竟孩子确实需要帮助。你会提问试探对方是否靠谱。",
+    openingMsg: "你好，你是高途的老师吗？怎么有我的电话的？"
+  },
+  price_objection: {
+    parentName: "王爸爸",
+    profile: "初二学生家长 · 对比过多家机构 · 价格敏感",
+    personality: "price_sensitive",
+    context: "你是王爸爸，初二学生家长，孩子成绩中上。你已经看过好几家机构的课，对价格很敏感，觉得培训费用不便宜。你会反复追问价格和性价比，但内心也清楚好老师值好价钱。",
+    openingMsg: "老师你好，课程我大概了解了，但是这个价格确实有点高了。我看其他机构要便宜很多。"
+  },
+  effect_objection: {
+    parentName: "张妈妈",
+    profile: "初三学生家长 · 孩子成绩下滑 · 焦虑但犹豫",
+    personality: "anxious",
+    context: "你是张妈妈，初三学生家长，孩子最近成绩持续下滑，数学上次只考了60多分，你非常焦虑。之前报过几个班效果都不明显，所以对报班既渴望又犹豫，怕再花钱没效果。",
+    openingMsg: "老师你好，我孩子初三了，成绩一直上不去，我就是担心报了班也没用，之前也报过好几个了。"
+  },
+  closing: {
+    parentName: "刘妈妈",
+    profile: "小升初家长 · 已经了解课程 · 在做最后决定",
+    personality: "hesitating",
+    context: "你是刘妈妈，孩子小升初关键期。你已经了解了课程内容，觉得师资和课程都不错，但还在犹豫要不要现在报名——主要是担心孩子能不能坚持，以及想跟家人商量一下。你不是不认可课程，而是需要最后一点推动力。",
+    openingMsg: "老师，课程内容我了解了，感觉还不错。但是我还想回去跟孩子商量一下再说。"
+  },
+  competitor_compare: {
+    parentName: "陈爸爸",
+    profile: "初二学生家长 · 正在对比学而思和高途",
+    personality: "comparative",
+    context: "你是陈爸爸，初二学生家长，做事比较理性。你同时在考察学而思和高途的课程，做了不少功课。你不是故意刁难，而是真心想帮孩子选最好的方案。你会从师资、服务、效果、价格多个角度对比。",
+    openingMsg: "老师你好，我其实也在看学而思的课，你们跟他们比有什么不一样的地方？"
+  }
+};
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+let currentPanel = 'dashboard';
+let trainingState = { scenario: 'cold_call', messages: [], turn: 0, totalScore: { empathy: 0, strategy: 0, close: 0, clarity: 0, count: 0 } };
+let currentKB = 'scenarios';
+let isApiWorking = null;
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function openSettings() {
+  const modal = document.getElementById('settingsModal');
+  const keyInput = document.getElementById('settingApiKey');
+  const config = getApiConfig();
+  keyInput.value = config.apiKey;
+  document.getElementById('settingCorsProxy').checked = config.corsProxy;
+  document.getElementById('settingStatus').innerHTML = '';
+  modal.style.display = 'flex';
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').style.display = 'none';
+}
+
+function saveSettings() {
+  const key = document.getElementById('settingApiKey').value.trim();
+  const model = document.getElementById('settingModel').value.trim();
+  const corsProxy = document.getElementById('settingCorsProxy').checked;
+  if (!key) {
+    document.getElementById('settingStatus').innerHTML = '<div class="status-msg error">请输入 API Key</div>';
+    return;
+  }
+  saveApiConfig(key, model, corsProxy);
+}
+
+async function testConnection() {
+  const key = document.getElementById('settingApiKey').value.trim() || getApiConfig().apiKey;
+  if (!key) {
+    document.getElementById('settingStatus').innerHTML = '<div class="status-msg error">请先输入 API Key</div>';
+    return;
+  }
+
+  document.getElementById('settingStatus').innerHTML = '<div class="status-msg info"><div class="loading-indicator"><div class="loading-dots"><span></span><span></span><span></span></div>测试连接中...</div></div>';
+
+  try {
+    const config = getApiConfig();
+    const response = await fetch(getFetchUrl(config), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'Qwen/Qwen3.6-35B-A3B',
+        messages: [{ role: 'user', content: '回复"连接成功"' }],
+        max_tokens: 20
+      })
+    });
+
+    if (response.ok) {
+      isApiWorking = true;
+      document.getElementById('settingStatus').innerHTML = '<div class="status-msg success">✅ 连接成功！Qwen3.6-35B-A3B 模型可用</div>';
+      updateApiStatus();
+    } else {
+      const err = await response.text();
+      isApiWorking = false;
+      document.getElementById('settingStatus').innerHTML = `<div class="status-msg error">❌ 连接失败: ${err.slice(0,150)}</div>`;
+      updateApiStatus();
+    }
+  } catch (e) {
+    isApiWorking = false;
+    document.getElementById('settingStatus').innerHTML = `<div class="status-msg error">❌ 网络错误: ${e.message}</div>`;
+    updateApiStatus();
+  }
+}
+
+function updateApiStatus() {
+  const config = getApiConfig();
+  const dot = document.getElementById('apiStatusDot');
+  const label = document.getElementById('apiStatusLabel');
+
+  if (config.apiKey && isApiWorking !== false) {
+    dot.className = 'status-dot online';
+    label.textContent = 'Qwen3.6 · 已配置';
+  } else {
+    dot.className = 'status-dot offline';
+    label.textContent = 'Qwen3.6 · 点击配置';
+  }
+}
+
+function showToast(msg, type) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    currentPanel = item.dataset.panel;
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + currentPanel).classList.add('active');
+    if (currentPanel === 'training') initTraining();
+    if (currentPanel === 'knowledge') renderKB();
+    if (currentPanel === 'dashboard') renderDashboard();
+  });
+});
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const stageChart = document.getElementById('stageChart');
+  stageChart.innerHTML = stageData.map(d => {
+    const color = d.diff >= 10 ? '#10b981' : d.diff >= 5 ? '#f59e0b' : '#2a2e3f';
+    const label = d.diff > 0 ? `▲${d.diff.toFixed(1)}%` : d.diff < 0 ? `▼${Math.abs(d.diff).toFixed(1)}%` : '持平';
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${d.name}</div>
+        <div class="bar-track">
+          <div class="bar-fill blue" style="width:${d.deal}%">成交 ${d.deal}%</div>
+        </div>
+        <div style="font-size:11px;color:${color};width:60px;text-align:right">${label}</div>
+      </div>`;
+  }).join('');
+
+  const advisorChart = document.getElementById('advisorChart');
+  const maxCount = Math.max(...advisorData.map(d => d.count));
+  advisorChart.innerHTML = advisorData.map(d => `
+    <div class="bar-row">
+      <div class="bar-label">${d.name}</div>
+      <div class="bar-track">
+        <div class="bar-fill orange" style="width:${(d.count/maxCount*100)}%">${d.count}条</div>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// TRAINING MODE (LLM-powered)
+// ============================================================
+function initTraining() {
+  const scenario = document.getElementById('scenarioSelect').value;
+  trainingState = { scenario, messages: [], turn: 0, totalScore: { empathy: 0, strategy: 0, close: 0, clarity: 0, count: 0 } };
+  const cfg = scenarios[scenario];
+  document.getElementById('parentName').textContent = cfg.parentName;
+  document.getElementById('parentProfile').textContent = cfg.profile;
+  document.getElementById('trainingMessages').innerHTML = '';
+  document.getElementById('scoreText').textContent = '--';
+  document.getElementById('scoreCircle').setAttribute('stroke-dasharray', '0 264');
+  ['sEmpathy','sStrategy','sClose','sClarity'].forEach(id => document.getElementById(id).textContent = '--');
+  document.getElementById('scoreFeedback').style.display = 'none';
+  document.getElementById('trainingInput').disabled = false;
+  document.getElementById('sendBtn').disabled = false;
+
+  addMessage('parent', cfg.openingMsg);
+  updateHints(cfg.parentName + '开场了，准备好你的回应');
+}
+
+function changeScenario() {
+  initTraining();
+}
+
+function setTrainingLoading(loading) {
+  document.getElementById('trainingInput').disabled = loading;
+  document.getElementById('sendBtn').disabled = loading;
+  if (loading) {
+    document.getElementById('sendBtn').textContent = '思考中...';
+  } else {
+    document.getElementById('sendBtn').textContent = '发送 ➤';
+  }
+}
+
+async function sendTraining() {
+  const input = document.getElementById('trainingInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage('advisor', text);
+  input.value = '';
+  trainingState.turn++;
+  setTrainingLoading(true);
+
+  const scenarioCfg = scenarios[trainingState.scenario];
+
+  try {
+    // 并行：AI评分 + AI生成家长回应
+    const [scoreResult, parentResponse] = await Promise.all([
+      getAIScore(text, scenarioCfg),
+      getAIParentResponse(scenarioCfg)
+    ]);
+
+    // Update scores
+    updateAIScores(scoreResult);
+
+    // Add parent response
+    setTimeout(() => {
+      addMessage('parent', parentResponse);
+      updateHints(parentResponse);
+
+      if (trainingState.turn >= 6) {
+        addMessage('system', '📋 本轮陪练结束。查看右侧AI评分和策略提示，看看哪些地方可以改进。点击顶部切换场景重新开始。');
+        document.getElementById('trainingInput').disabled = true;
+        document.getElementById('sendBtn').disabled = true;
+      }
+    }, 400);
+  } catch (e) {
+    console.error('LLM调用失败，使用规则引擎回退:', e);
+    // Fallback to rule-based
+    const scores = fallbackScore(text);
+    updateScoresLegacy(scores);
+    const parentResponse = fallbackParentResponse();
+    setTimeout(() => {
+      addMessage('parent', parentResponse);
+      updateHints(parentResponse);
+      if (trainingState.turn >= 6) {
+        addMessage('system', '📋 本轮陪练结束（离线模式）。');
+        document.getElementById('trainingInput').disabled = true;
+        document.getElementById('sendBtn').disabled = true;
+      }
+    }, 800);
+  } finally {
+    setTrainingLoading(false);
+  }
+}
+
+function addMessage(role, text) {
+  const container = document.getElementById('trainingMessages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  if (role !== 'system') {
+    div.innerHTML = `<div class="role">${role === 'parent' ? '👤 家长' : '🎯 顾问（你）'}</div>${text}`;
+  } else {
+    div.textContent = text;
+  }
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  trainingState.messages.push({ role, text });
+}
+
+// --- AI 评分 ---
+async function getAIScore(advisorText, scenarioCfg) {
+  const history = trainingState.messages.slice(-6).map(m => 
+    `${m.role === 'parent' ? '家长' : '顾问'}: ${m.text}`
+  ).join('\n');
+
+  const systemPrompt = `你是销冠智能体的评分专家。你需要评估顾问（教育销售）的回应对家长的效果。
+
+评分标准（每项0-100分）：
+- 共情能力：是否理解家长情绪，使用"理解/明白/确实/知道/体会"等共情词汇
+- 策略匹配：是否运用了有效的销售策略（痛点锚定、试听破冰、紧迫关单、镜像共情、价值重构、承诺阶梯）
+- 推动成交：是否往成交方向推进，有没有给出明确的下一步行动指引
+- 语言流畅：表达是否自然、有条理，有没有使用提问句式引导对话
+
+请严格按以下JSON格式回复，不要加任何其他内容：
+{"empathy":分数,"strategy":分数,"close":分数,"clarity":分数,"feedback":"20字以内的简短改进建议"}`;
+
+  const userPrompt = `场景：${scenarioCfg.parentName} - ${scenarioCfg.profile}
+最近对话：
+${history}
+
+顾问最新回应：${advisorText}
+
+请评分。`;
+
+  const result = await callLLM([
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt }
+  ], { temperature: 0.3, maxTokens: 200 });
+
+  try {
+    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    if (jsonMatch) return JSON.parse(jsonMatch[0]);
+  } catch(e) {}
+  
+  // JSON parse failed, try regex extraction
+  const extract = (key) => {
+    const m = result.match(new RegExp(`"${key}"\\s*:\\s*(\\d+)`));
+    return m ? parseInt(m[1]) : 70;
+  };
+  return {
+    empathy: extract('empathy'),
+    strategy: extract('strategy'),
+    close: extract('close'),
+    clarity: extract('clarity'),
+    feedback: '请查看各项得分'
+  };
+}
+
+function updateAIScores(scores) {
+  const ts = trainingState.totalScore;
+  ts.empathy += scores.empathy;
+  ts.strategy += scores.strategy;
+  ts.close += scores.close;
+  ts.clarity += scores.clarity;
+  ts.count++;
+
+  const avgEmpathy = Math.round(ts.empathy / ts.count);
+  const avgStrategy = Math.round(ts.strategy / ts.count);
+  const avgClose = Math.round(ts.close / ts.count);
+  const avgClarity = Math.round(ts.clarity / ts.count);
+  const overall = Math.round((avgEmpathy + avgStrategy + avgClose + avgClarity) / 4);
+
+  document.getElementById('scoreText').textContent = overall;
+  const circumference = 2 * Math.PI * 42;
+  const dash = (overall / 100) * circumference;
+  document.getElementById('scoreCircle').setAttribute('stroke-dasharray', `${dash} ${circumference}`);
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    el.className = 'val ' + (val >= 75 ? 'good' : val >= 50 ? 'warn' : 'bad');
+  };
+  setVal('sEmpathy', avgEmpathy);
+  setVal('sStrategy', avgStrategy);
+  setVal('sClose', avgClose);
+  setVal('sClarity', avgClarity);
+
+  if (scores.feedback) {
+    const fb = document.getElementById('scoreFeedback');
+    fb.style.display = 'block';
+    fb.textContent = `💬 ${scores.feedback}`;
+  }
+}
+
+function updateScoresLegacy(scores) {
+  const ts = trainingState.totalScore;
+  ts.empathy += scores.empathy;
+  ts.strategy += scores.strategy;
+  ts.close += scores.close;
+  ts.clarity += scores.clarity;
+  ts.count++;
+
+  const avgEmpathy = Math.round(ts.empathy / ts.count);
+  const avgStrategy = Math.round(ts.strategy / ts.count);
+  const avgClose = Math.round(ts.close / ts.count);
+  const avgClarity = Math.round(ts.clarity / ts.count);
+  const overall = Math.round((avgEmpathy + avgStrategy + avgClose + avgClarity) / 4);
+
+  document.getElementById('scoreText').textContent = overall;
+  const circumference = 2 * Math.PI * 42;
+  const dash = (overall / 100) * circumference;
+  document.getElementById('scoreCircle').setAttribute('stroke-dasharray', `${dash} ${circumference}`);
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    el.className = 'val ' + (val >= 75 ? 'good' : val >= 50 ? 'warn' : 'bad');
+  };
+  setVal('sEmpathy', avgEmpathy);
+  setVal('sStrategy', avgStrategy);
+  setVal('sClose', avgClose);
+  setVal('sClarity', avgClarity);
+}
+
+// --- AI 家长回应 ---
+async function getAIParentResponse(scenarioCfg) {
+  const history = trainingState.messages.slice(-8).map(m => 
+    `${m.role === 'parent' ? '家长' : '顾问'}: ${m.text}`
+  ).join('\n');
+
+  const isLastTurn = trainingState.turn >= 6;
+
+  const systemPrompt = `你是高途教育的一个${scenarioCfg.parentName}，${scenarioCfg.context}
+
+作为这个家长角色，你需要：
+1. 自然真实地回应顾问的话，像真人一样有情绪起伏
+2. 根据你的性格设定来反应：怀疑型会追问细节，焦虑型会表达担忧，比价型会反复谈价格
+3. 逐步推进对话，从怀疑/犹豫 → 了解 → 认可 → 动心
+4. 每次回复控制在30-100字，像真实对话，不要长篇大论
+5. 用口语化表达，不是书面语
+6. ${isLastTurn ? '这是对话最后一轮，根据你的性格做出最终决定（倾向于认可并留下联系方式/报名）' : '继续保持当前阶段的对话状态'}
+7. 只回复家长说的话，不要加任何前缀或说明`;
+
+  const userPrompt = `对话记录：
+${history}
+
+现在顾问说了最后一句。请作为${scenarioCfg.parentName}自然回应。只回复家长说的话。`;
+
+  const result = await callLLM([
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt }
+  ], { temperature: 0.85, maxTokens: 200 });
+
+  return result.trim();
+}
+
+// --- 规则引擎回退 ---
+function fallbackScore(text) {
+  const empathyWords = ['理解', '明白', '确实', '不容易', '辛苦', '焦虑', '担心', '感受', '我知道', '能体会'];
+  const closeWords = ['报名', '名额', '优惠', '今天', '试听', '先', '微信', '安排', '锁', '定金', '确认'];
+  return {
+    empathy: Math.min(100, empathyWords.filter(w => text.includes(w)).length * 20 + 20),
+    strategy: 60,
+    close: Math.min(100, closeWords.filter(w => text.includes(w)).length * 20 + 10),
+    clarity: text.length > 30 && text.length < 300 ? 85 : 70
+  };
+}
+
+function fallbackParentResponse() {
+  const respPool = {
+    cold_call: ["哦，你是高途的老师啊。行，那你说说看吧。","孩子现在初一，成绩一般般，数学和英语不太好。你们有什么课吗？","那你们这个课是怎么上的？线上的吗？","费用呢？大概多少钱？","嗯，我大概了解了。不过我还想再考虑一下。","好吧，那你加我微信吧，我把孩子的情况发给你看看。"],
+    price_objection: ["那你说说看，你们跟其他机构比，到底好在哪？","一万多？这确实不便宜啊。","那有没有优惠？比如多报几科能便宜点？","行吧，那有没有试听课？先让孩子感受一下。","好吧，那你把优惠方案发我微信上，我看看。"],
+    effect_objection: ["对对对，数学和英语都不行，数学上次才考了60多分。","我们也试过不少方法，但是一直没太大效果。","那你说的这些案例是真的吗？有没有反馈可以给我看看？","试听课是免费的吗？如果孩子不愿意听怎么办？","行，先试听看看，如果孩子觉得好，我们再谈后续。"],
+    closing: ["嗯，课程内容确实挺好的，我对你们师资也比较认可。","主要是担心孩子能不能坚持。","那你们有没有什么保障？万一不合适可以退吗？","行吧，那今天就先报了吧。你发我付款链接。"],
+    competitor_compare: ["嗯，学而思的课我们也看了，感觉也还行。你们跟他们的区别到底是什么？","哦，双师模式？那主讲老师和辅导老师分别负责什么？","听起来确实比学而思的服务更细致一些。那费用呢？","行，我觉得你们的模式确实更适合我们需要盯着的孩子。那就先报吧。"],
+  };
+  const pool = respPool[trainingState.scenario] || respPool.cold_call;
+  return pool[Math.min(trainingState.turn - 1, pool.length - 1)];
+}
+
+function updateHints(parentResponse) {
+  const hintsDiv = document.getElementById('strategyHints');
+  const scenario = trainingState.scenario;
+
+  let relevantStrategies = [];
+  if (scenario === 'cold_call') {
+    relevantStrategies = [KB.strategies[0], KB.strategies[3]];
+  } else if (scenario === 'price_objection') {
+    relevantStrategies = [KB.strategies[4], KB.strategies[2]];
+  } else if (scenario === 'effect_objection') {
+    relevantStrategies = [KB.strategies[3], KB.strategies[1]];
+  } else if (scenario === 'closing') {
+    relevantStrategies = [KB.strategies[5], KB.strategies[2]];
+  } else {
+    relevantStrategies = [KB.strategies[3], KB.strategies[1]];
+  }
+
+  hintsDiv.innerHTML = '<h3>💡 策略提示</h3>' + relevantStrategies.map(st => `
+    <div class="hint-item">
+      <div class="hint-type">${st.name} <span class="badge ${st.effect === '高' ? 'high' : 'mid'}">${st.effect}效</span></div>
+      <div class="hint-text">${st.desc}</div>
+      <div class="hint-text" style="color:var(--gold);margin-top:4px;font-size:11px">话术示例：${st.phrases[0]}</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// SUGGESTION ENGINE (LLM-powered)
+// ============================================================
+async function getSuggestions() {
+  const input = document.getElementById('contextInput').value.trim();
+  if (!input) return;
+
+  const panel = document.getElementById('suggestionsPanel');
+  document.getElementById('suggestPlaceholder').style.display = 'none';
+  panel.innerHTML = '<h3>🎯 AI建议</h3><div style="text-align:center;padding:20px"><div class="loading-indicator"><div class="loading-dots"><span></span><span></span><span></span></div>GLM-5.2 分析中...</div></div>';
+  document.getElementById('suggestBtn').disabled = true;
+
+  try {
+    // 先用规则引擎快速检测问题类型
+    const detectedIssues = detectIssues(input);
+
+    // 构建知识库上下文
+    const kbContext = buildKBContext(detectedIssues);
+
+    const systemPrompt = `你是销冠智能体的实时建议引擎。你的知识库包含以下经过验证的销冠话术和策略：
+
+${kbContext}
+
+你需要根据家长对话上下文，提供精准的话术建议。
+回复格式：返回JSON数组，每个元素包含：
+- issue: 识别到的异议类型
+- strategy: 推荐策略名称
+- script: 建议顾问应该说的话（50-150字，自然口语化，像销冠一样说话）
+- reasoning: 为什么推荐这个策略（15字以内）
+
+最多返回3个建议，按优先级排序。只返回JSON数组，不要其他内容。`;
+
+    const result = await callLLM([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `家长对话：\n${input}\n\n请给出建议话术。` }
+    ], { temperature: 0.6, maxTokens: 800 });
+
+    // Parse JSON array from result
+    let suggestions;
+    try {
+      const jsonMatch = result.match(/\[[\s\S]*\]/);
+      suggestions = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    } catch(e) {}
+
+    if (!suggestions || suggestions.length === 0) {
+      // Fallback to rule-based
+      suggestions = detectedIssues.map((issue, i) => {
+        const strategy = KB.strategies[i % KB.strategies.length];
+        const objResponses = KB.objection[issue.type] || [];
+        return {
+          issue: issue.type,
+          strategy: strategy.name,
+          script: objResponses[0] || `根据"${strategy.name}"，建议先共情再引导。`,
+          reasoning: strategy.desc.slice(0,15)
+        };
+      });
+    }
+
+    let html = '<h3>🎯 AI建议 (' + suggestions.length + '条)</h3>';
+    suggestions.forEach((s, i) => {
+      html += `
+      <div class="suggestion-card">
+        <div class="sug-rank">#${i + 1} · ${s.issue || ''}</div>
+        <div class="sug-strategy">策略：${s.strategy}</div>
+        <div class="sug-text">💬 <strong>建议回应：</strong>${s.script}</div>
+        <div class="sug-meta">📌 ${s.reasoning || ''}</div>
+      </div>`;
+    });
+
+    html += `
+    <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:8px">💡 进阶技巧</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.8">
+        • 先共情再引导，不要让家长觉得你在"反驳"他<br>
+        • 用案例说话——"之前有个家长跟您一样的情况"<br>
+        • 给出下一步行动指引——"咱们先试听一节"<br>
+        • 及时加微信，后续跟进比一通电话更重要
+      </div>
+    </div>`;
+
+    panel.innerHTML = html;
+  } catch (e) {
+    console.error('建议引擎LLM调用失败:', e);
+    // Rule-based fallback
+    const detectedIssues = detectIssues(input);
+    let html = '<h3>🎯 AI建议（离线模式）</h3>';
+    if (detectedIssues.length === 0) {
+      html += '<div style="color:var(--text2);font-size:13px;padding:12px">未检测到明确的异议信号</div>';
+    }
+    detectedIssues.forEach((issue, i) => {
+      const strategy = KB.strategies[i % KB.strategies.length];
+      const objResponses = KB.objection[issue.type] || [];
+      html += `
+      <div class="suggestion-card">
+        <div class="sug-rank">#${i + 1}</div>
+        <div class="sug-strategy">${issue.type} → ${strategy.name}</div>
+        <div class="sug-text">💬 ${objResponses[0] || strategy.desc}</div>
+        <div class="sug-meta">📌 ${strategy.desc}</div>
+      </div>`;
+    });
+    panel.innerHTML = html;
+  } finally {
+    document.getElementById('suggestBtn').disabled = false;
+  }
+}
+
+function buildKBContext(detectedIssues) {
+  let ctx = '';
+  // Relevant strategies
+  KB.strategies.forEach(st => {
+    ctx += `策略「${st.name}」(效果:${st.effect}): ${st.desc}。关键词: ${st.phrases.slice(0,3).join('、')}\n`;
+  });
+  // Relevant objection handling
+  detectedIssues.forEach(iss => {
+    const responses = KB.objection[iss.type];
+    if (responses) {
+      ctx += `\n问题「${iss.type}」销冠回应示例:\n`;
+      responses.slice(0, 2).forEach((r, i) => ctx += `  ${i+1}. ${r}\n`);
+    }
+  });
+  return ctx;
+}
+
+function detectIssues(text) {
+  const issues = [];
+  const patterns = [
+    { type: '价格贵', keywords: ['多少钱','费用','价格','贵','学费','太贵','不便宜'] },
+    { type: '没时间', keywords: ['没时间','时间','忙','顾不上'] },
+    { type: '跟孩子商量', keywords: ['跟孩子','和孩子','商量','回家问','孩子不愿意'] },
+    { type: '怕没效果', keywords: ['效果','有用吗','能提分','进步','有没有用'] },
+    { type: '再考虑', keywords: ['考虑','再看看','想想','回去想','不急'] },
+    { type: '对比其他', keywords: ['学而思','新东方','猿辅导','作业帮','别的','其他机构','对比'] },
+    { type: '怕跟不上', keywords: ['跟不上','基础差','听不懂','太难','不会'] },
+  ];
+  patterns.forEach(p => {
+    if (p.keywords.some(kw => text.includes(kw))) {
+      issues.push(p);
+    }
+  });
+  return issues;
+}
+
+function loadDemoSuggestion() {
+  const demos = [
+    "【家长】老师你好，你们这个课程多少钱？我看其他机构好像便宜不少。而且我也不确定孩子愿不愿意学，之前报过几个都没坚持下来。",
+    "【家长】你好，孩子现在是初二，数学成绩一直在及格线徘徊，我特别焦虑。但是之前报了学而思效果也不明显，你们跟学而思有什么区别？",
+    "【家长】课程内容我了解了，感觉还可以。但是费用确实有点高，能不能再优惠点？我要回去跟家人商量一下。"
+  ];
+  document.getElementById('contextInput').value = demos[Math.floor(Math.random() * demos.length)];
+}
+
+// ============================================================
+// KNOWLEDGE BASE
+// ============================================================
+function renderKB(category) {
+  category = category || currentKB;
+  currentKB = category;
+
+  const catsDiv = document.getElementById('kbCategories');
+  const cats = [
+    { id: 'scenarios', label: '📋 场景分类', count: KB.scenarios.length },
+    { id: 'qa', label: '💬 QA问答对', count: KB.qa.length },
+    { id: 'strategies', label: '🎯 策略卡片', count: KB.strategies.length },
+    { id: 'objection', label: '🛡️ 异议处理', count: Object.keys(KB.objection).length },
+    { id: 'opening', label: '🎤 开场话术', count: KB.opening.length },
+    { id: 'closing', label: '🔒 关单话术', count: KB.closing.length },
+  ];
+  catsDiv.innerHTML = cats.map(c => `
+    <div class="kb-category ${c.id === category ? 'active' : ''}" onclick="renderKB('${c.id}')">
+      ${c.label} <span class="count">${c.count}</span>
+    </div>`).join('');
+
+  const contentDiv = document.getElementById('kbContent');
+  let html = '';
+
+  if (category === 'scenarios') {
+    html = '<h3 style="margin-bottom:16px">📋 销售场景分类</h3>';
+    KB.scenarios.forEach(s => {
+      html += `<div class="kb-item">
+        <span class="kb-tag strategy">场景</span>
+        <div class="kb-title">${s.name}</div>
+        <div class="kb-desc">${s.desc}</div>
+      </div>`;
+    });
+  } else if (category === 'qa') {
+    html = `<h3 style="margin-bottom:16px">💬 QA问答对（${KB.qa.length}条）</h3>`;
+    KB.qa.forEach(qa => {
+      html += `<div class="kb-item">
+        <span class="kb-tag qa">QA</span>
+        <div class="kb-title">❓ ${qa.q}</div>
+        <div class="kb-desc">💡 ${qa.a}</div>
+      </div>`;
+    });
+  } else if (category === 'strategies') {
+    html = `<h3 style="margin-bottom:16px">🎯 策略卡片（${KB.strategies.length}张）</h3>`;
+    KB.strategies.forEach(st => {
+      html += `<div class="kb-item">
+        <span class="kb-tag strategy">策略</span>
+        <span class="badge ${st.effect === '高' ? 'high' : 'mid'}">${st.effect}效</span>
+        <div class="kb-title">${st.name}</div>
+        <div class="kb-desc">${st.desc}</div>
+        <div class="kb-desc" style="margin-top:8px;color:var(--gold)">关键词：${st.phrases.join('、')}</div>
+      </div>`;
+    });
+  } else if (category === 'objection') {
+    html = '<h3 style="margin-bottom:16px">🛡️ 异议处理话术</h3>';
+    Object.entries(KB.objection).forEach(([type, responses]) => {
+      html += `<div class="kb-item">
+        <span class="kb-tag strategy">异议</span>
+        <div class="kb-title">"${type}"</div>
+        ${responses.map((r, i) => `<div class="kb-desc" style="margin-top:8px">${i+1}. ${r}</div>`).join('')}
+      </div>`;
+    });
+  } else if (category === 'opening') {
+    html = '<h3 style="margin-bottom:16px">🎤 销冠开场话术</h3>';
+    KB.opening.forEach(o => {
+      html += `<div class="kb-item">
+        <span class="kb-tag script">开场</span>
+        <div class="kb-desc" style="font-size:13px">${o.script}</div>
+        <div class="sug-meta">顾问：${o.advisor}</div>
+      </div>`;
+    });
+  } else if (category === 'closing') {
+    html = '<h3 style="margin-bottom:16px">🔒 销冠关单话术</h3>';
+    KB.closing.forEach(c => {
+      html += `<div class="kb-item">
+        <span class="kb-tag script">关单</span>
+        <div class="kb-desc" style="font-size:13px">${c.script}</div>
+        <div class="sug-meta">顾问：${c.advisor}</div>
+      </div>`;
+    });
+  }
+
+  contentDiv.innerHTML = html;
+}
+
+function filterKB(query) {
+  if (query.length > 2) {
+    const contentDiv = document.getElementById('kbContent');
+    const allItems = [
+      ...KB.scenarios.map(s => ({type:'scenario',t:s.name,d:s.desc})),
+      ...KB.qa.map(q => ({type:'qa',t:q.q,d:q.a})),
+      ...KB.strategies.map(s => ({type:'strategy',t:s.name,d:s.desc})),
+      ...Object.entries(KB.objection).map(([k,v]) => ({type:'objection',t:k,d:v[0]})),
+    ];
+    const filtered = allItems.filter(i => i.t.includes(query) || i.d.includes(query));
+    if (filtered.length > 0) {
+      contentDiv.innerHTML = `<h3 style="margin-bottom:16px">🔍 搜索 "${query}" (${filtered.length}条)</h3>` +
+        filtered.slice(0, 20).map(i => `<div class="kb-item">
+          <span class="kb-tag ${i.type === 'qa' ? 'qa' : 'strategy'}">${i.type}</span>
+          <div class="kb-title">${i.t}</div>
+          <div class="kb-desc">${i.d}</div>
+        </div>`).join('');
+    } else {
+      contentDiv.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)">未找到匹配结果</div>';
+    }
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+updateApiStatus();
+
+// Auto-test connection on load
+(async () => {
+  const config = getApiConfig();
+  if (config.apiKey) {
+    try {
+      const r = await callLLM([{role:'user',content:'回复"OK"'}], {maxTokens:10});
+      isApiWorking = true;
+    } catch(e) {
+      isApiWorking = false;
+    }
+    updateApiStatus();
+  }
+})();
+
+renderDashboard();
+</script>
+
+</body>
+</html>

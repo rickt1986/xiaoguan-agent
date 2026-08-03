@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>训练营通话数据清洗报告</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #1a1d27;
+  --border: #2a2d3a;
+  --text: #e1e4ea;
+  --sub: #8b8fa3;
+  --accent: #6366f1;
+  --green: #22c55e;
+  --yellow: #f59e0b;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
+h2 { font-size: 20px; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+h3 { font-size: 16px; margin: 20px 0 12px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
+.subtitle { color: var(--sub); font-size: 14px; margin-bottom: 24px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.stat { text-align: center; padding: 16px; }
+.stat .value { font-size: 36px; font-weight: 700; color: var(--accent); line-height: 1.2; }
+.stat .label { font-size: 13px; color: var(--sub); margin-top: 4px; }
+.grade-bar { display: flex; align-items: center; margin: 8px 0; gap: 12px; }
+.grade-label { width: 24px; font-weight: 700; font-size: 16px; text-align: center; }
+.grade-track { flex: 1; background: var(--bg); border-radius: 8px; height: 28px; overflow: hidden; }
+.grade-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; font-size: 13px; font-weight: 600; color: white; }
+.grade-info { min-width: 140px; font-size: 13px; color: var(--sub); text-align: right; }
+.a-fill { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.b-fill { background: linear-gradient(90deg, #6366f1, #4f46e5); }
+.c-fill { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.d-fill { background: linear-gradient(90deg, #6b7280, #4b5563); }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+th { text-align: left; padding: 10px 12px; background: var(--bg); color: var(--sub); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 10px 12px; border-top: 1px solid var(--border); }
+tr:hover td { background: rgba(99,102,241,0.04); }
+.flow-step { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.flow-num { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+.flow-content { flex: 1; }
+.flow-title { font-weight: 600; margin-bottom: 4px; }
+.flow-desc { font-size: 13px; color: var(--sub); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin: 0 4px; }
+.tag-green { background: rgba(34,197,94,0.15); color: #22c55e; }
+.tag-blue { background: rgba(99,102,241,0.15); color: #818cf8; }
+.tag-yellow { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.tag-red { background: rgba(239,68,68,0.15); color: #f87171; }
+.tag-purple { background: rgba(168,85,247,0.15); color: #c084fc; }
+.highlight { background: rgba(99,102,241,0.1); padding: 2px 6px; border-radius: 4px; font-weight: 600; color: #a5b4fc; }
+.sample-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 13px; line-height: 1.8; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin: 8px 0; }
+.adv { color: #818cf8; font-weight: 600; }
+.par { color: #fbbf24; font-weight: 600; }
+.section-intro { color: var(--sub); font-size: 14px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<h1>📊 训练营通话数据清洗报告</h1>
+<p class="subtitle">数据源：26年近半年训练营top顾问通话文字版记录 · 清洗日期：2026-08-03</p>
+
+<div class="card-grid">
+  <div class="card stat">
+    <div class="value">12,070</div>
+    <div class="label">原始通话记录</div>
+  </div>
+  <div class="card stat">
+    <div class="value">8,235</div>
+    <div class="label">A+B级蒸馏可用</div>
+  </div>
+  <div class="card stat">
+    <div class="value">5,063</div>
+    <div class="label">A级精华数据</div>
+  </div>
+  <div class="card stat">
+    <div class="value">68.2%</div>
+    <div class="label">AB级占比</div>
+  </div>
+</div>
+
+<h2>一、清洗流程</h2>
+<div class="card">
+  <div class="flow-step">
+    <div class="flow-num">1</div>
+    <div class="flow-content">
+      <div class="flow-title">说话人角色识别 <span class="tag tag-blue">多信号融合</span></div>
+      <div class="flow-desc">基于关键词+正则模式+话轮结构等多信号，对12,070条通话中的说话人0/1重新识别，判断谁是顾问、谁是家长。置信度中位数0.87，65.1%达到高置信度(≥0.7)。</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">2</div>
+    <div class="flow-content">
+      <div class="flow-title">统一标注替换 <span class="tag tag-green">【顾问】/【家长】</span></div>
+      <div class="flow-desc">将原始"说话人0:""说话人1:"统一替换为"【顾问】""【家长】"。11,095条成功标注顾问，10,458条成功标注家长，仅1,770条含少量【其他】残留（如第三方说话人）。</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">3</div>
+    <div class="flow-content">
+      <div class="flow-title">ASR噪音修复 <span class="tag tag-yellow">自动清理</span></div>
+      <div class="flow-desc">合并连续重复的"嗯"、修复重叠说话标记(&&)、统一标点、去除多余空白。有效对话（双方各≥2轮）8,142条。</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">4</div>
+    <div class="flow-content">
+      <div class="flow-title">质量分级 A/B/C/D <span class="tag tag-purple">6维评分</span></div>
+      <div class="flow-desc">基于有效对话、内容长度、说话人置信度、话轮互动、噪音水平、通话时长6个维度综合打分，8,235条达A+B级可直接用于蒸馏。</div>
+    </div>
+  </div>
+</div>
+
+<h2>二、质量分级结果</h2>
+<div class="card">
+  <div class="grade-bar">
+    <div class="grade-label" style="color:#22c55e">A</div>
+    <div class="grade-track"><div class="grade-fill a-fill" style="width:41.9%">5,063条 · 41.9%</div></div>
+    <div class="grade-info">成交率 32.6% · 成交1,651条</div>
+  </div>
+  <div class="grade-bar">
+    <div class="grade-label" style="color:#6366f1">B</div>
+    <div class="grade-track"><div class="grade-fill b-fill" style="width:26.3%">3,172条 · 26.3%</div></div>
+    <div class="grade-info">成交率 17.1% · 成交542条</div>
+  </div>
+  <div class="grade-bar">
+    <div class="grade-label" style="color:#f59e0b">C</div>
+    <div class="grade-track"><div class="grade-fill c-fill" style="width:10.6%">1,276条 · 10.6%</div></div>
+    <div class="grade-info">成交率 15.0% · 成交191条</div>
+  </div>
+  <div class="grade-bar">
+    <div class="grade-label" style="color:#6b7280">D</div>
+    <div class="grade-track"><div class="grade-fill d-fill" style="width:21.2%">2,559条 · 21.2%</div></div>
+    <div class="grade-info">成交率 11.6% · 成交296条</div>
+  </div>
+</div>
+
+<h2>三、数据质量画像</h2>
+<div class="card-grid">
+  <div class="card">
+    <h3>A+B级 vs C+D级</h3>
+    <table>
+      <tr><th>指标</th><th>A+B级</th><th>C+D级</th></tr>
+      <tr><td>平均字数</td><td class="highlight">3,124字</td><td>166字</td></tr>
+      <tr><td>顾问话轮</td><td class="highlight">78.3轮</td><td>4.9轮</td></tr>
+      <tr><td>家长话轮</td><td class="highlight">49.0轮</td><td>2.8轮</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>成交 vs 未成交</h3>
+    <table>
+      <tr><th>指标</th><th><span style="color:#22c55e">成交</span></th><th><span style="color:#ef4444">未成交</span></th></tr>
+      <tr><td>平均字数</td><td class="highlight">3,963字</td><td>1,704字</td></tr>
+      <tr><td>顾问话轮</td><td class="highlight">95.1轮</td><td>43.5轮</td></tr>
+      <tr><td>家长话轮</td><td class="highlight">61.1轮</td><td>26.7轮</td></tr>
+      <tr><td>A+B占比</td><td class="highlight">81.8%</td><td>64.3%</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>通话时长 × 质量</h3>
+    <table>
+      <tr><th>等级</th><th>平均时长</th><th>中位时长</th></tr>
+      <tr><td>A级</td><td class="highlight">782秒(13.0分)</td><td>561秒</td></tr>
+      <tr><td>B级</td><td>141秒(2.3分)</td><td>89秒</td></tr>
+      <tr><td>C级</td><td>66秒(1.1分)</td><td>41秒</td></tr>
+      <tr><td>D级</td><td>30秒(0.5分)</td><td>15秒</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>说话人识别统计</h3>
+    <table>
+      <tr><th>识别结果</th><th>数量</th><th>占比</th></tr>
+      <tr><td>说话人0=顾问</td><td>6,378条</td><td>52.8%</td></tr>
+      <tr><td>说话人1=顾问</td><td>4,739条</td><td>39.3%</td></tr>
+      <tr><td>无法判断</td><td>953条</td><td>7.9%</td></tr>
+      <tr><td colspan="3" style="color:var(--sub); font-size:12px; padding-top:8px;">置信度均值0.75 · 中位数0.87 · 高置信(≥0.7)占65.1%</td></tr>
+    </table>
+  </div>
+</div>
+
+<h2>四、顾问数据分布</h2>
+<div class="card">
+  <p class="section-intro">按A+B级数据量排序，展示各顾问可蒸馏数据资产及成交率</p>
+  <table>
+    <tr><th>顾问</th><th>A级</th><th>B级</th><th>合计</th><th>成交</th><th>成交率</th><th>平均字数</th><th>话轮比</th></tr>
+    <tr><td><strong>温晓云</strong></td><td>528</td><td>404</td><td class="highlight">932</td><td>229</td><td>24.6%</td><td>1,957</td><td>1.38</td></tr>
+    <tr><td><strong>胡继红</strong></td><td>444</td><td>232</td><td class="highlight">676</td><td>162</td><td>24.0%</td><td>2,849</td><td>1.66</td></tr>
+    <tr><td><strong>杨霜09</strong></td><td>391</td><td>259</td><td class="highlight">650</td><td>135</td><td>20.8%</td><td>-</td><td>-</td></tr>
+    <tr><td><strong>曹梦冉</strong></td><td>307</td><td>326</td><td class="highlight">633</td><td>96</td><td>15.2%</td><td>-</td><td>-</td></tr>
+    <tr><td><strong>周鑫26</strong></td><td>398</td><td>172</td><td class="highlight">570</td><td>180</td><td>31.6%</td><td>3,957</td><td>1.51</td></tr>
+    <tr><td><strong>黄强02</strong></td><td>310</td><td>215</td><td>525</td><td>139</td><td>26.5%</td><td>-</td><td>-</td></tr>
+    <tr><td><strong>王军37</strong></td><td>392</td><td>105</td><td>497</td><td>205</td><td><span class="tag tag-green">41.2%</span></td><td>5,655</td><td>1.54</td></tr>
+    <tr><td><strong>陶恩碧</strong></td><td>280</td><td>160</td><td>440</td><td>74</td><td>16.8%</td><td>-</td><td>-</td></tr>
+    <tr><td><strong>钟月01</strong></td><td>229</td><td>188</td><td>417</td><td>136</td><td>32.6%</td><td>-</td><td>-</td></tr>
+    <tr><td><strong>傅行02</strong></td><td>216</td><td>85</td><td>301</td><td>141</td><td><span class="tag tag-green">46.8%</span></td><td>4,955</td><td>1.90</td></tr>
+  </table>
+</div>
+
+<h2>五、清洗后对话样本</h2>
+<div class="card">
+  <h3>A级 · 成交对话样本（傅行02，4,955字，成交率46.8%）</h3>
+  <div class="sample-box">
+<span class="adv">【顾问】</span>喂唉你好，是俊杰的妈妈是吧？
+<span class="par">【家长】</span>是你好
+<span class="adv">【顾问】</span>唉你好你好，俊杰爸爸，我是您微信上加的那个高途的小云老师。我看孩子昨天晚上他不是来听了咱们那个飞跃班的数学和英语的课程，他这边听的时候是自己听的，还是您这边陪着孩子听的？
+<span class="par">【家长】</span>他自己听的。
+<span class="adv">【顾问】</span>噢了解，我看您孩子之前是不是接触过咱高途啊孩子妈妈八年级，刚上八年级的时候不是也听过咱高途的课是吧？
+<span class="par">【家长】</span>是听过
+<span class="adv">【顾问】</span>噢了解了解，那我看给你发好多消息您都没回，咱这边的话您现在是...
+  </div>
+</div>
+
+<div class="card">
+  <h3>A级 · 费用异议处理样本</h3>
+  <div class="sample-box">
+<span class="par">【家长】</span>我是觉得你们的一期的费用太贵了。
+<span class="adv">【顾问】</span>您是说那个三科的那个1万多的那个太贵了是吧？
+<span class="par">【家长】</span>噢对，嗯因为
+<span class="adv">【顾问】</span>他那个是三个科目，再加上是暑修，所以说稍微贵一点，您可以告诉我您主要是想给孩子提升哪几科，然后针对性的选择。
+<span class="par">【家长】</span>数学和物理。
+<span class="adv">【顾问】</span>数学物理您完全可以给孩子组这个拼班，双科拼班下来的话就没有那么贵了，没有到1万多，他下来的学费大概是个7160。
+<span class="par">【家长】</span>清单下来大概是多少？
+<span class="adv">【顾问】</span>7160暑秋班，就是从暑假一直上到九年级上期末考结束。
+  </div>
+</div>
+
+<h2>六、输出文件清单</h2>
+<div class="card">
+  <table>
+    <tr><th>文件名</th><th>内容</th><th>记录数</th><th>用途</th></tr>
+    <tr>
+      <td><code>训练营通话数据_已清洗.xlsx</code></td>
+      <td>全量12,070条，含所有列+清洗标记</td>
+      <td>12,070</td>
+      <td><span class="tag tag-blue">完整数据档案</span></td>
+    </tr>
+    <tr>
+      <td><code>训练营通话数据_AB级蒸馏用.xlsx</code></td>
+      <td>A+B级，可直接用于LLM蒸馏</td>
+      <td class="highlight">8,235</td>
+      <td><span class="tag tag-green">知识蒸馏主数据源</span></td>
+    </tr>
+    <tr>
+      <td><code>训练营通话数据_A级精华.xlsx</code></td>
+      <td>仅A级，最高质量对话</td>
+      <td class="highlight">5,063</td>
+      <td><span class="tag tag-purple">话术提炼金矿</span></td>
+    </tr>
+    <tr>
+      <td><code>speaker_identification.csv</code></td>
+      <td>说话人角色识别结果</td>
+      <td>12,070</td>
+      <td><span class="tag tag-yellow">可审计中间产物</span></td>
+    </tr>
+    <tr>
+      <td><code>cleaning_stats.json</code></td>
+      <td>清洗统计指标JSON</td>
+      <td>-</td>
+      <td><span class="tag tag-blue">清洗量化指标</span></td>
+    </tr>
+  </table>
+</div>
+
+<h2>七、蒸馏建议</h2>
+<div class="card">
+  <div class="flow-step">
+    <div class="flow-num">→</div>
+    <div class="flow-content">
+      <div class="flow-title">优先蒸馏A级成交对话</div>
+      <div class="flow-desc">A级中成交的1,651条对话，平均13分钟、3,963字、95轮顾问发言——这是最高含金量的"销冠原矿"。</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">→</div>
+    <div class="flow-content">
+      <div class="flow-title">按顾问风格分轨蒸馏</div>
+      <div class="flow-desc">傅行02（话轮比1.90，话多主导型，成交率46.8%）vs 温晓云（话轮比1.38，互动型，932条海量样本），不同风格的蒸馏产物分开存储，支撑不同场景的AI陪练。</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">→</div>
+    <div class="flow-content">
+      <div class="flow-title">成交通话=正向样本 + 未成交通话=负向样本</div>
+      <div class="flow-desc">8,235条AB级中，2,193条为成交、6,042条为未成交。两组数据可分别用于提取"做什么能成"和"做什么会掉"，构建更精准的实时建议规则。</div>
+    </div>
+  </div>
+</div>
+
+<p style="text-align:center; color:var(--sub); padding:32px 0; font-size:13px;">训练营Agent数据清洗 · 完成于2026-08-03 · 下一步：知识蒸馏</p>
+
+</body>
+</html>

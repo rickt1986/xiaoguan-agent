@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>训练营Agent巡游报告 · Top顾问通话数据分析</title>
+<style>
+  :root {
+    --bg: #f8f7f5; --surface: #ffffff; --border: #e4e2dd;
+    --text: #1a1a1a; --text-2: #555; --text-3: #888;
+    --accent: #534AB7; --accent-l: #EEEDFE;
+    --teal: #0F6E56; --teal-l: #E1F5EE;
+    --coral: #993C1D; --coral-l: #FAECE7;
+    --blue: #185FA5; --blue-l: #E6F1FB;
+    --amber: #854F0B; --amber-l: #FAEEDA;
+    --red: #A32D2D; --red-l: #FCEBEB;
+    --green: #3B6D11; --green-l: #EAF3DE;
+    --radius: 12px; --radius-sm: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7;
+    font-size: 15px; -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.5px; }
+  .subtitle { color: var(--text-3); font-size: 14px; margin-bottom: 12px; }
+  .meta-info { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
+  .meta-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 14px; font-size: 13px; color: var(--text-2); }
+  .meta-item b { color: var(--text); }
+  h2 { font-size: 19px; font-weight: 600; margin: 36px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 15px; font-weight: 500; margin: 20px 0 8px; }
+  p { margin-bottom: 10px; color: var(--text-2); }
+  p strong { color: var(--text); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin: 14px 0; }
+  .card-b { background: var(--blue-l); border-color: transparent; }
+  .card-t { background: var(--teal-l); border-color: transparent; }
+  .card-c { background: var(--coral-l); border-color: transparent; }
+  .card-a { background: var(--amber-l); border-color: transparent; }
+  .card-r { background: var(--red-l); border-color: transparent; }
+  .card-g { background: var(--green-l); border-color: transparent; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; background: #f1efea; font-weight: 500; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text-2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; margin-right: 4px; }
+  .tag-p { background: var(--accent-l); color: var(--accent); }
+  .tag-t { background: var(--teal-l); color: var(--teal); }
+  .tag-c { background: var(--coral-l); color: var(--coral); }
+  .tag-r { background: var(--red-l); color: var(--red); }
+  .tag-g { background: var(--green-l); color: var(--green); }
+  .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 14px 0; }
+  .metric {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px; text-align: center;
+  }
+  .metric .num { font-size: 22px; font-weight: 600; }
+  .metric .label { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .metric .num.purple { color: var(--accent); }
+  .metric .num.teal { color: var(--teal); }
+  .metric .num.coral { color: var(--coral); }
+  .metric .num.blue { color: var(--blue); }
+  .bar-container { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+  .bar-label { width: 100px; text-align: right; font-size: 12px; color: var(--text-2); }
+  .bar-track { flex: 1; height: 16px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .highlight { background: #fff8e1; border-left: 3px solid #ef9f27; padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 14px 0; font-size: 13px; }
+  .insight-box { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .insight-box:last-child { border-bottom: none; }
+  .insight-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; }
+  .insight-text { flex: 1; }
+  .insight-text h4 { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .insight-text p { font-size: 13px; margin-bottom: 0; }
+  .phase-steps { display: flex; gap: 0; margin: 12px 0; }
+  .phase-step { flex: 1; padding: 14px 10px; background: var(--surface); border: 1px solid var(--border); text-align: center; position: relative; }
+  .phase-step:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .phase-step:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .phase-step .step-num { font-size: 20px; font-weight: 600; color: var(--accent); }
+  .phase-step .step-label { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+  .divider { height: 1px; background: var(--border); margin: 28px 0; }
+  .callout { font-size: 14px; color: var(--text-2); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin: 14px 0; }
+  @media (max-width: 600px) {
+    .metric-row { grid-template-columns: repeat(2, 1fr); }
+    .phase-steps { flex-wrap: wrap; }
+    .phase-step { flex: 0 0 50%; border-radius: 0; }
+    .meta-info { flex-direction: column; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>训练营 Agent 巡游报告</h1>
+<p class="subtitle">Top顾问通话文字版记录 · 数据画像与蒸馏可行性评估</p>
+<div class="meta-info">
+  <div class="meta-item">数据量：<b>12,070条</b> 通话记录</div>
+  <div class="meta-item">Top顾问：<b>20人</b></div>
+  <div class="meta-item">时间跨度：<b>2026.02 - 2026.07</b></div>
+  <div class="meta-item">总文字量：<b>~2,700万字</b></div>
+</div>
+
+<div class="card card-b">
+  <h3 style="margin-top:0">核心结论</h3>
+  <p style="margin-bottom:8px"><strong>数据质量超预期</strong>—— 12,070条通话中，98.8%已ASR转写，77.4%达到高质量标准（完整对话+低噪音）。6,896条（57%）包含500字以上的有效对话内容，成交率26.0%。</p>
+  <p style="margin-bottom:0"><strong>蒸馏可行性强</strong>—— 成交通话（平均690秒、4081字、65轮顾问话术）与非成交通话（平均290秒、1750字、33轮）呈现显著结构性差异，可通过对话长度、话轮密度、话题展开深度等维度区分优质话术。但ASR说话人标注不一致是需要优先解决的瓶颈。</p>
+</div>
+
+<h2>1. 数据概览</h2>
+
+<div class="metric-row">
+  <div class="metric">
+    <div class="num purple">12,070</div>
+    <div class="label">总通话记录数</div>
+  </div>
+  <div class="metric">
+    <div class="num teal">11,930</div>
+    <div class="label">有ASR文字版（98.8%）</div>
+  </div>
+  <div class="metric">
+    <div class="num coral">20</div>
+    <div class="label">Top顾问人数</div>
+  </div>
+  <div class="metric">
+    <div class="num blue">57</div>
+    <div class="label">数据字段数</div>
+  </div>
+</div>
+
+<div class="metric-row">
+  <div class="metric">
+    <div class="num purple">2,295</div>
+    <div class="label">平均内容字数</div>
+  </div>
+  <div class="metric">
+    <div class="num teal">379s</div>
+    <div class="label">平均通话时长（6.3分）</div>
+  </div>
+  <div class="metric">
+    <div class="num coral">25.4%</div>
+    <div class="label">高质量通话成交率</div>
+  </div>
+  <div class="metric">
+    <div class="num blue">57.1%</div>
+    <div class="label">高价值通话占比</div>
+  </div>
+</div>
+
+<h2>2. 顾问画像</h2>
+<p>20位Top顾问全部专注<strong>初中（7-9年级）训练营</strong>业务，覆盖25个期次。Top3顾问（温晓云、杨霜09、胡继红）的通话量占总量30.6%。</p>
+
+<table>
+  <tr>
+    <th>排名</th><th>顾问</th><th>通话量</th><th>近半年收款</th><th>成交人头</th><th>线索成交率</th><th>均时长(s)</th><th>成交通话率</th><th>成交均时长(s)</th>
+  </tr>
+  <tr>
+    <td>1</td><td><strong>温晓云</strong></td><td>1,516</td><td>¥863,110</td><td>131</td><td>3.19%</td><td>223</td><td>19.7%</td><td>425</td>
+  </tr>
+  <tr>
+    <td>2</td><td><strong>杨霜09</strong></td><td>1,089</td><td>¥421,553</td><td>67</td><td>2.24%</td><td>282</td><td>14.8%</td><td>708</td>
+  </tr>
+  <tr>
+    <td>3</td><td><strong>胡继红</strong></td><td>1,085</td><td>¥622,078</td><td>92</td><td>2.56%</td><td>302</td><td>19.3%</td><td>668</td>
+  </tr>
+  <tr>
+    <td>4</td><td>曹梦冉</td><td>1,011</td><td>¥417,245</td><td>87</td><td>2.54%</td><td>220</td><td>12.2%</td><td>492</td>
+  </tr>
+  <tr>
+    <td>5</td><td>黄强02</td><td>796</td><td>¥275,294</td><td>44</td><td>1.48%</td><td>327</td><td>21.8%</td><td>595</td>
+  </tr>
+  <tr><td colspan="9" style="text-align:center;color:var(--text-3);font-size:12px;">... 共20位顾问，完整列表见附录</td></tr>
+</table>
+
+<div class="card card-c">
+  <h3>值得关注的异常值</h3>
+  <div class="insight-box">
+    <div class="insight-num">1</div>
+    <div class="insight-text">
+      <h4>傅行02：成交通话率最高（44.4%），但通话量不高（383条）</h4>
+      <p>通话质量很高——成交时均长907秒，可能是"精耕细作"型：少打电话但每个电话打得深入。她的通话值得重点蒸馏。</p>
+    </div>
+  </div>
+  <div class="insight-box">
+    <div class="insight-num">2</div>
+    <div class="insight-text">
+      <h4>王军37：成交通话率39.5%，平均774秒</h4>
+      <p>通话量576条，成交时长均990秒——这是在通话中深度跟进的类型。她的对话结构可能最具参考价值。</p>
+    </div>
+  </div>
+  <div class="insight-box">
+    <div class="insight-num">3</div>
+    <div class="insight-text">
+      <h4>温晓云 vs 杨霜09：量vs质</h4>
+      <p>温晓云通话量最高（1516条），但平均时长最短（223秒）——靠量取胜。杨霜09通话量第二但成交通话率仅14.8%，但成交通话平均时长708秒——成交质量高但不稳定。</p>
+    </div>
+  </div>
+</div>
+
+<h2>3. 通话特征分析</h2>
+
+<h3>3.1 通话时长分布</h3>
+<p>通话时长呈典型的<strong>长尾分布</strong>：大量短通话（未接/拒接/简单确认），少数超长通话（深度沟通）。</p>
+
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:10px 0;">
+  <div class="bar-container">
+    <div class="bar-label">0-30s</div>
+    <div class="bar-track"><div class="bar-fill" style="width:22%;background:var(--accent)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">22%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">30-120s</div>
+    <div class="bar-track"><div class="bar-fill" style="width:26%;background:var(--blue)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">26%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">2-8分钟</div>
+    <div class="bar-track"><div class="bar-fill" style="width:27%;background:var(--teal)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">27%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">8-18分钟</div>
+    <div class="bar-track"><div class="bar-fill" style="width:15%;background:var(--coral)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">15%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">18+分钟</div>
+    <div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--red)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">10%</span>
+  </div>
+</div>
+
+<h3>3.2 成交 vs 非成交：关键差异</h3>
+<table>
+  <tr><th>维度</th><th>成交通话</th><th>非成交通话</th><th>倍数</th></tr>
+  <tr><td>平均内容长度</td><td>4,081字</td><td>1,750字</td><td><strong>2.3x</strong></td></tr>
+  <tr><td>平均通话时长</td><td>690秒(11.5分)</td><td>290秒(4.8分)</td><td><strong>2.4x</strong></td></tr>
+  <tr><td>平均顾问话轮</td><td>64.9轮</td><td>32.7轮</td><td><strong>2.0x</strong></td></tr>
+  <tr><td>平均家长话轮</td><td>97.3轮</td><td>45.0轮</td><td><strong>2.2x</strong></td></tr>
+</table>
+
+<div class="highlight"><b>蒸馏启示：</b> 成交对话的"深度"远超非成交——不仅是时间长，而是话轮密度更大、话题展开更充分。这说明销冠的核心能力不是"说得多"，而是<strong>让家长愿意多说</strong>。蒸馏时需要重点关注"如何引出家长的深层顾虑"的技巧，而不只是顾问说什么。</div>
+
+<h3>3.3 通话中的高频话题</h3>
+<p>通过对全部11,930条文字内容的关键词检测，识别出以下核心话题的覆盖频率：</p>
+
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:10px 0;">
+  <div class="bar-container">
+    <div class="bar-label">时间安排</div>
+    <div class="bar-track"><div class="bar-fill" style="width:58.7%;background:var(--accent)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">58.7%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">跟孩子商量</div>
+    <div class="bar-track"><div class="bar-fill" style="width:41.1%;background:var(--coral)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">41.1%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">成绩/分数</div>
+    <div class="bar-track"><div class="bar-fill" style="width:38.0%;background:var(--blue)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">38.0%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">效果保证</div>
+    <div class="bar-track"><div class="bar-fill" style="width:37.2%;background:var(--teal)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">37.2%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">试听课</div>
+    <div class="bar-track"><div class="bar-fill" style="width:36.4%;background:var(--coral)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">36.4%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">价格/费用</div>
+    <div class="bar-track"><div class="bar-fill" style="width:28.3%;background:var(--accent)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">28.3%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">马上报名</div>
+    <div class="bar-track"><div class="bar-fill" style="width:27.3%;background:var(--blue)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">27.3%</span>
+  </div>
+  <div class="bar-container">
+    <div class="bar-label">目标高中</div>
+    <div class="bar-track"><div class="bar-fill" style="width:22.0%;background:var(--teal)"></div></div>
+    <span style="font-size:12px;color:var(--text-3);width:40px">22.0%</span>
+  </div>
+</div>
+
+<div class="highlight"><b>话术结构洞察：</b> 高频话题的前三位（时间→商量→成绩）恰好映射了K12家长决策链条：<strong>"有没有时间上课"</strong>是入口问题，<strong>"要不要跟孩子商量"</strong>是赋权问题，<strong>"孩子成绩怎么样"</strong>是痛点锚定。这三个问题处理好了，后续的价格/报名/效果话题才有展开空间。</div>
+
+<h2>4. ASR转写质量评估</h2>
+
+<div class="card card-r">
+  <h3>关键瓶颈：说话人标注不一致</h3>
+  <p>采样检测发现，<strong>说话人0和说话人1的角色分配不统一</strong>——有的通话中0是顾问，有的0是家长。这对蒸馏是致命问题——如果不知道一段话说出自顾问还是家长，就无法正确判断"这是销冠的技巧还是家长的反应"。</p>
+  <p style="margin-bottom:6px"><strong>根因推测：</strong> 呼叫中心录音系统可能把"发起方"固定标为说话人0，而呼出通话和呼入通话的发起方不同（95.4%是呼出，所以大部分通话0=顾问，但也有家长回拨的情况导致0=家长）。</p>
+  <p style="margin-bottom:0"><strong>解决方案：</strong> 蒸馏前增加一个<strong>LLM说话人识别预处理步骤</strong>。每条通话的前3轮对话送入LLM，根据内容判断谁是顾问谁是家长，然后统一标注。成本可控（每条约500 tokens输入），但需在蒸馏管道中增加这个预处理环节。</p>
+</div>
+
+<div class="card card-a">
+  <h3>其他质量缺陷</h3>
+  <table>
+    <tr><th>问题</th><th>严重度</th><th>影响</th><th>处理方式</th></tr>
+    <tr><td>填充词泛滥（大量"嗯"）</td><td><span class="tag tag-c">中</span></td><td>通话开头一段常常是连续十几个"嗯"，增加噪音</td><td>正则清洗去除连续单字回复</td></tr>
+    <tr><td>无标点无换行</td><td><span class="tag tag-c">中</span></td><td>对话混成一串，LLM难以准确理解话轮边界</td><td>按"说话人X:"切分后加换行符</td></tr>
+    <tr><td>ASR错字/漏字</td><td><span class="tag tag-r">高</span></td><td>部分通话有明显ASR错误，如"垃圾"替代正确词</td><td>LLM上下文纠错（利用后续对话推断）</td></tr>
+    <tr><td>部分通话内容截断（32,767字符上限）</td><td><span class="tag tag-c">低</span></td><td>极少数超长通话可能在32767字符处被截断</td><td>标注截断记录，蒸馏时跳过</td></tr>
+  </table>
+</div>
+
+<h2>5. 蒸馏可行性评估与建议</h2>
+
+<div class="card card-g">
+  <h3>5.1 数据分层策略</h3>
+  <p>不是所有12,070条通话都值得深度蒸馏。建议按质量分级处理：</p>
+  <table>
+    <tr><th>等级</th><th>筛选条件</th><th>数量</th><th>用途</th></tr>
+    <tr><td><span class="tag tag-g">A级 核心蒸馏</span></td><td>成交 + ≥1000字 + ≥180秒 + 双方各≥10轮</td><td><strong>~1,200条</strong></td><td>LLM深度蒸馏——提取完整话术模板、QA对、策略卡片</td></tr>
+    <tr><td><span class="tag tag-t">B级 批量学习</span></td><td>≥500字 + ≥60秒 + 双方各≥5轮</td><td><strong>~6,900条</strong></td><td>轻量处理——话术段标注、场景分类、关键词标签</td></tr>
+    <tr><td><span class="tag tag-c">C级 参考样本</span></td><td>≥200字 + ≥30秒 + 双方各≥3轮</td><td><strong>~9,300条</strong></td><td>场景覆盖补充、生僻场景样本</td></tr>
+    <tr><td><span class="tag tag-p">D级 跳过</span></td><td>短通话/未接通/内容质量差</td><td><strong>~2,700条</strong></td><td>不进入蒸馏管道</td></tr>
+  </table>
+</div>
+
+<h3>5.2 蒸馏输出物设计</h3>
+<p>基于数据分析，训练营场景下应产出以下知识结构：</p>
+
+<table>
+  <tr><th>知识类型</th><th>示例</th><th>预估产出量</th></tr>
+  <tr>
+    <td><strong>话术模板</strong></td>
+    <td>"孩子妈妈，我看您孩子这次数学考了XX分，如果这个薄弱点不补上，到初三的XX章节会直接跟不上——这跟我们昨天课上讲的那个知识点是直接相关的..."</td>
+    <td>300-500条</td>
+  </tr>
+  <tr>
+    <td><strong>QA对</strong></td>
+    <td>Q:"会不会太贵了？" A:"您看，现在XX元解决的问题，如果拖到初三再去补，可能要花上万元——而且时间上更紧..."</td>
+    <td>200-300对</td>
+  </tr>
+  <tr>
+    <td><strong>异议处理策略卡</strong></td>
+    <td>场景：家长说"要跟孩子商量"——策略1：先确认孩子是否知道课程→策略2：暗示孩子其实有兴趣→策略3：制造紧迫感"名额有限"</td>
+    <td>50-80张</td>
+  </tr>
+  <tr>
+    <td><strong>阶段指引</strong></td>
+    <td>开场白→需求探询→价值锚定→异议化解→促单→跟进的每个阶段的最优话术模式</td>
+    <td>6个阶段×10场景</td>
+  </tr>
+  <tr>
+    <td><strong>家长画像卡</strong></td>
+    <td>焦虑型家长（过度关注成绩，反复确认效果）vs 理性型家长（先问价格再问内容）vs 放养型家长（不太管孩子）的话术应对策略</td>
+    <td>5-8个画像</td>
+  </tr>
+</table>
+
+<h3>5.3 蒸馏流水线设计</h3>
+
+<div class="phase-steps">
+  <div class="phase-step">
+    <div class="step-num">1</div>
+    <div class="step-label">说话人识别<br>LLM校正标注</div>
+  </div>
+  <div class="phase-step">
+    <div class="step-num">2</div>
+    <div class="step-label">对话清洗<br>去填充/分词/分段</div>
+  </div>
+  <div class="phase-step">
+    <div class="step-num">3</div>
+    <div class="step-label">NLP分析<br>意图识别/话题分类</div>
+  </div>
+  <div class="phase-step">
+    <div class="step-num">4</div>
+    <div class="step-label">LLM蒸馏<br>话术模板/QA对/策略卡</div>
+  </div>
+  <div class="phase-step">
+    <div class="step-num">5</div>
+    <div class="step-label">质量评分<br>成交率排序/审核</div>
+  </div>
+  <div class="phase-step">
+    <div class="step-num">6</div>
+    <div class="step-label">入库<br>向量化/模板化</div>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>第一期蒸馏建议</strong><br>
+  先处理Top5顾问（温晓云、杨霜09、胡继红、曹梦冉、黄强02）+ 傅行02（成交率最高）+ 王军37（通话最深），这7个人的A级数据预估约400-600条，足以跑通整套蒸馏管道并产出500+话术模板、200+QA对、50+策略卡片。这个规模的产出已经可以让AI陪练跑起来。
+</div>
+
+<h2>6. 实际通话话术模式预览</h2>
+
+<p>从成交对话中采样分析，已经可以观察到几种典型的销冠话术模式：</p>
+
+<div class="card">
+  <h3>模式A：痛点锚定型</h3>
+  <p style="color:var(--text-2);margin-bottom:4px">以尹梓震的成交对话为例，典型模式：</p>
+  <div style="background:#fafaf7;border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;color:var(--text-2);line-height:1.8">
+    <strong>家长：</strong>孩子说的不学嘛。<br>
+    <strong style="color:var(--accent)">顾问：</strong>他为啥不学呀？<br>
+    <strong>家长：</strong>心疼钱呗。<br>
+    <strong style="color:var(--accent)">顾问：</strong>替我那您觉得现在没补的东西，那未来如果说真的到了这一步，对吧，差那几分上高中，差那几分上重高，那不得花更多钱。<br>
+    <strong style="color:var(--accent)">顾问：</strong>明明是一个重点重高的苗子，100多分的数学，一下子被70多分的英语，本来能读重点高中的，一下子到普通高中去就。他也划不着了，对吧。<br>
+    <strong style="color:var(--accent)">顾问：</strong>现在3000多能解决的问题，如果到了初二初三再去想着补课，那可能五六千一万块钱都要花出去。
+  </div>
+  <p style="font-size:12px;color:var(--text-3);margin-top:6px">话术特征：把当前的痛点和未来的代价关联起来，制造"现在不补 = 未来更贵 + 结果更差"的逻辑链</p>
+</div>
+
+<div class="card">
+  <h3>模式B：价值前置 + 风险消除型</h3>
+  <p style="color:var(--text-2);margin-bottom:4px">以曹梦冉的成交对话为例：</p>
+  <div style="background:#fafaf7;border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;color:var(--text-2);line-height:1.8">
+    <strong style="color:var(--accent)">顾问：</strong>如果说咱们从现在到4月18号这28天时间，孩子成绩也进步了，学习态度也比较好<br>
+    <strong style="color:var(--accent)">顾问：</strong>那我们才从4月18号开始扣您的课时费<br>
+    <strong style="color:var(--accent)">顾问：</strong>如果说这中间孩子学习态度有问题，或者说我们没给孩子教好，那4月18号之前可以把课时费全额退给您<br>
+    <strong style="color:var(--accent)">顾问：</strong>所以咱们相当于有一个月的双向奔赴、双向选择的时间
+  </div>
+  <p style="font-size:12px;color:var(--text-3);margin-top:6px">话术特征：用"无条件退款期"消除决策风险，用"双向选择"这个概念让家长感到平等和尊重，而非"求着报课"</p>
+</div>
+
+<div class="card">
+  <h3>模式C：竞品对标 + 价值锚定型</h3>
+  <p style="color:var(--text-2);margin-bottom:4px">以尹梓震的另一段成交对话为例：</p>
+  <div style="background:#fafaf7;border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;color:var(--text-2);line-height:1.8">
+    <strong style="color:var(--accent)">顾问：</strong>我们的老师用的都是全国最好的，线上没有几个教培能有资本挺胸脯保证比高途的老师好<br>
+    <strong style="color:var(--accent)">顾问：</strong>价值决定价格。您可能去当地找一个本科生，在村里回村的那种大学生，可能给孩子补课也行，但是我觉得价值是决定价格的，包括分数不会骗人
+  </div>
+  <p style="font-size:12px;color:var(--text-3);margin-top:6px">话术特征：不直接比价格，而是建立"高途 vs 当地本科生"的价值鸿沟，"分数不会骗人"一句直击家长最焦虑的点</p>
+</div>
+
+<h2>7. 下一步行动建议</h2>
+
+<div class="card card-b">
+  <h3>训练营销冠Agent · POC验证方案</h3>
+  <table>
+    <tr><th>步骤</th><th>内容</th><th>耗时</th><th>产出</th></tr>
+    <tr>
+      <td><span class="tag tag-p">Step 1</span></td>
+      <td>说话人统一清洗：用LLM对萃取通话进行角色识别和统一标注</td>
+      <td>1-2天</td>
+      <td>清洗后的统一格式通话数据</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-p">Step 2</span></td>
+      <td>选取50条A级成交通话（涵盖不同学段、不同顾问），LLM深度蒸馏</td>
+      <td>2-3天</td>
+      <td>首批50+话术模板、30+QA对、10张策略卡片</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-p">Step 3</span></td>
+      <td>业务专家（leader/销冠）审核蒸馏产出，打分确认质量</td>
+      <td>1-2天</td>
+      <td>经过人工验证的高质量知识条目</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-p">Step 4</span></td>
+      <td>基于验证通过的知识，搭建简易版AI陪练（2-3个核心场景）</td>
+      <td>3-5天</td>
+      <td>可用的AI陪练MVP</td>
+    </tr>
+  </table>
+  <p style="margin-top:8px"><strong>POC整体周期：2周。投入：1名AI工程师 + 0.5名业务专家。</strong></p>
+</div>
+
+<div class="divider"></div>
+<p style="font-size:13px;color:var(--text-3)">训练营Agent巡游报告 · 数据日期：2026.08.03 · 基于12,070条通话文字记录</p>
+
+</div>
+</body>
+</html>

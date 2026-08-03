@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>销冠智能体 · 系统建设方案</title>
+<style>
+  :root {
+    --bg: #f8f7f5;
+    --surface: #ffffff;
+    --border: #e4e2dd;
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --accent: #534AB7;
+    --accent-l: #EEEDFE;
+    --teal: #0F6E56;
+    --teal-l: #E1F5EE;
+    --coral: #993C1D;
+    --coral-l: #FAECE7;
+    --blue: #185FA5;
+    --blue-l: #E6F1FB;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 820px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .subtitle { color: var(--text-3); font-size: 14px; margin-bottom: 40px; }
+  h2 {
+    font-size: 19px; font-weight: 600; margin: 40px 0 16px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 14px; font-weight: 500;
+  }
+  h3 { font-size: 16px; font-weight: 500; margin: 24px 0 10px; color: var(--text); }
+  p { margin-bottom: 12px; color: var(--text-2); }
+  p strong { color: var(--text); }
+  ul, ol { margin: 8px 0 16px 20px; color: var(--text-2); }
+  li { margin-bottom: 6px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px; margin: 16px 0;
+  }
+  .card-l { background: var(--accent-l); border-color: transparent; }
+  .card-t { background: var(--teal-l); border-color: transparent; }
+  .card-c { background: var(--coral-l); border-color: transparent; }
+  .card-b { background: var(--blue-l); border-color: transparent; }
+  .card h3 { margin-top: 0; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 12px 0;
+    font-size: 14px;
+  }
+  th {
+    text-align: left; padding: 10px 12px;
+    background: #f1efea; font-weight: 500; color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    color: var(--text-2); vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; margin-right: 6px;
+  }
+  .tag-p { background: var(--accent-l); color: var(--accent); }
+  .tag-t { background: var(--teal-l); color: var(--teal); }
+  .tag-c { background: var(--coral-l); color: var(--coral); }
+  .tag-b { background: var(--blue-l); color: var(--blue); }
+  .phase {
+    display: flex; gap: 16px; margin: 16px 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .phase-label {
+    flex-shrink: 0; width: 80px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 16px 8px; color: #fff; font-weight: 500;
+  }
+  .phase-label span { font-size: 12px; opacity: 0.8; }
+  .phase-label b { font-size: 18px; }
+  .phase-1 .phase-label { background: var(--blue); }
+  .phase-2 .phase-label { background: var(--accent); }
+  .phase-3 .phase-label { background: var(--coral); }
+  .phase-body { padding: 14px 18px; flex: 1; }
+  .phase-body h4 { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .phase-body p { font-size: 13px; margin-bottom: 4px; }
+  .highlight {
+    background: #fff8e1; border-left: 3px solid #ef9f27;
+    padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 16px 0; font-size: 14px;
+  }
+  .highlight b { color: #854F0B; }
+  .metric-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0;
+  }
+  .metric {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px; text-align: center;
+  }
+  .metric .num { font-size: 24px; font-weight: 600; color: var(--accent); }
+  .metric .label { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+  .divider { height: 1px; background: var(--border); margin: 32px 0; }
+  .question-list { counter-reset: q; list-style: none; margin-left: 0; }
+  .question-list li {
+    counter-increment: q; padding: 12px 0 12px 36px;
+    position: relative; border-bottom: 1px solid var(--border);
+  }
+  .question-list li::before {
+    content: "Q" counter(q); position: absolute; left: 0; top: 12px;
+    font-weight: 600; font-size: 13px; color: var(--accent);
+  }
+  @media (max-width: 600px) {
+    .metric-row { grid-template-columns: 1fr; }
+    .phase { flex-direction: column; }
+    .phase-label { width: 100%; flex-direction: row; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>销冠智能体 · 系统建设方案</h1>
+<p class="subtitle">K12教育私域顾问团队 · 知识蒸馏 + AI陪练 + 实时建议</p>
+
+<div class="card card-l">
+  <h3>项目定位</h3>
+  <p>将<strong>top顾问的隐性经验</strong>（对话技巧、异议处理、促单节奏）转化为<strong>可复用的结构化知识资产</strong>，通过AI陪练帮助新人快速上手，通过实时建议系统辅助顾问在实战中提升转化率。</p>
+  <p style="margin-bottom:0"><strong>核心价值：从"口口相传"到"系统复制"，让销冠能力的复制不再依赖师傅带徒弟，而是可量化、可迭代、可规模化的系统工程。</strong></p>
+</div>
+
+<h2><span class="num">1</span> 系统架构详解</h2>
+
+<p>整个系统采用<strong>四层架构</strong>设计，自下而上依次为：数据采集层 → 知识蒸馏层 → 知识库层 → 应用层。</p>
+
+<h3>1.1 数据采集层</h3>
+<table>
+  <tr>
+    <th>数据源</th>
+    <th>采集方式</th>
+    <th>数据类型</th>
+    <th>关键挑战</th>
+  </tr>
+  <tr>
+    <td>电话录音</td>
+    <td>呼叫中心API / 企微通话录音</td>
+    <td>音频文件（mp3/wav）</td>
+    <td>ASR准确率、方言识别</td>
+  </tr>
+  <tr>
+    <td>企微/微信聊天</td>
+    <td>企微会话API / SCRM导出</td>
+    <td>文本记录（结构化/非结构化）</td>
+    <td>隐私脱敏、上下文断裂</td>
+  </tr>
+  <tr>
+    <td>CRM系统</td>
+    <td>CRM API对接</td>
+    <td>用户画像、成交记录、跟进轨迹</td>
+    <td>多系统数据打通</td>
+  </tr>
+  <tr>
+    <td>人工标注</td>
+    <td>销冠自标注 + 运营审核</td>
+    <td>最佳话术片段标签</td>
+    <td>标注一致性与质量</td>
+  </tr>
+</table>
+
+<div class="highlight">
+  <b>关键设计点：</b> 数据采集层需要建立<strong>统一的原始数据湖</strong>，所有来源的数据打上「顾问ID + 用户ID + 时间戳 + 成交结果」的四元组标签，为后续蒸馏环节的质量评分提供关联依据。
+</div>
+
+<h3>1.2 知识蒸馏层</h3>
+<p>这是整个系统的核心引擎，负责把原始对话数据提炼为结构化知识。蒸馏层分为四个子模块：</p>
+
+<table>
+  <tr>
+    <th>子模块</th>
+    <th>功能</th>
+    <th>技术方案</th>
+  </tr>
+  <tr>
+    <td>话术分类</td>
+    <td>将对话切分为功能段落：开场白 → 需求挖掘 → 方案展示 → 异议处理 → 促单 → 跟进</td>
+    <td>LLM few-shot分类 + 规则匹配</td>
+  </tr>
+  <tr>
+    <td>场景标签</td>
+    <td>给每段话术打上多维度标签：学段（小学/初中）、家长类型（焦虑型/理性型/价格敏感型）、核心痛点</td>
+    <td>NER实体抽取 + LLM标签推理</td>
+  </tr>
+  <tr>
+    <td>结构化提取</td>
+    <td>将话术段转为可复用的QA对、话术模板、策略卡片</td>
+    <td>LLM指令抽取 + 模板填充</td>
+  </tr>
+  <tr>
+    <td>质量评分</td>
+    <td>关联成交结果，对每段话术打分；成交对话的话术获得高权重</td>
+    <td>成交率排序 + 人工审核</td>
+  </tr>
+</table>
+
+<div class="card card-b">
+  <h3>蒸馏提示词设计要点</h3>
+  <p>第④步LLM话术蒸馏是整个管道的智力核心，提示词设计直接决定知识质量：</p>
+  <ul>
+    <li><strong>输入约束</strong>：明确传入对话上下文 + 场景标签 + 顾问成交结果</li>
+    <li><strong>输出格式</strong>：强制结构化JSON输出（话术类型、场景标签、原文片段、改写模板、适用条件、禁忌事项）</li>
+    <li><strong>few-shot示例</strong>：预先标注3-5个高质量范例作为few-shot，引导LLM产出标准</li>
+    <li><strong>质量阈值</strong>：设定置信度阈值，低于阈值的转入人工审核队列</li>
+  </ul>
+</div>
+
+<h3>1.3 知识库层</h3>
+<p>蒸馏后的知识需要三种存储形式，服务于不同的检索场景：</p>
+
+<table>
+  <tr>
+    <th>存储</th>
+    <th>用途</th>
+    <th>技术选型</th>
+    <th>数据特点</th>
+  </tr>
+  <tr>
+    <td>向量数据库</td>
+    <td>语义检索（RAG）—— 当顾问遇到特定场景时，用语义相似度找到最匹配的销冠话术</td>
+    <td>Milvus / 腾讯云VectorDB / Qdrant</td>
+    <td>话术embedding + 元数据过滤</td>
+  </tr>
+  <tr>
+    <td>结构化知识库</td>
+    <td>按场景树状组织的话术模板库、QA对库</td>
+    <td>PostgreSQL + JSON字段</td>
+    <td>支持精确过滤、版本管理</td>
+  </tr>
+  <tr>
+    <td>用户画像库</td>
+    <td>典型家长画像模型，用于陪练角色模拟和实时建议的上下文</td>
+    <td>结构化表 + 向量索引</td>
+    <td>画像维度 + 行为模式</td>
+  </tr>
+</table>
+
+<h3>1.4 应用层</h3>
+
+<div class="card card-l">
+  <h3>AI陪练系统</h3>
+  <p><span class="tag tag-p">面向新人</span> 新入职顾问无需等待师傅有空，随时可以启动AI陪练进行模拟实战训练。</p>
+  <ul>
+    <li><strong>场景选择</strong>：选择学段（小学/初中）、家长类型（焦虑型/理性型/价格敏感型）、核心痛点（成绩焦虑/升学压力/费用顾虑）</li>
+    <li><strong>角色扮演</strong>：AI基于知识库中的典型家长画像，扮演对应类型的家长，按照真实对话节奏推进</li>
+    <li><strong>多轮对话</strong>：AI会根据顾问的回答动态调整难度——回答得好就加大异议力度，回答不好就给出提示</li>
+    <li><strong>实时评分</strong>：从话术准确度、逻辑连贯性、节奏控制、情感共鸣四个维度实时打分</li>
+    <li><strong>练习报告</strong>：训练结束后生成薄弱点定位报告 + 个性化改进路径 + 推荐学习的话术片段</li>
+    <li><strong>排行榜</strong>：团队内练习积分排行，形成良性竞争氛围</li>
+  </ul>
+</div>
+
+<div class="card card-c">
+  <h3>实时建议引擎</h3>
+  <p><span class="tag tag-c">面向实战</span> 顾问在实际跟用户沟通时（电话或企微聊天），系统实时分析对话内容，给出话术建议。</p>
+  <ul>
+    <li><strong>实时输入</strong>：电话场景——ASR实时转写流推送；聊天场景——企微消息webhook推送</li>
+    <li><strong>上下文分析</strong>：LLM实时分析当前对话阶段（开场/需求挖掘/异议处理/促单）、用户情绪、关键异议点</li>
+    <li><strong>知识库检索</strong>：基于当前场景语义检索top销冠的话术，按成交率排序取最优</li>
+    <li><strong>策略卡片</strong>：以卡片形式在顾问侧屏展示建议话术（可一键复制）、异议处理方案、当前阶段提醒</li>
+    <li><strong>延迟控制</strong>：从用户说完话到建议卡片出现，控制在3-5秒内（ASR流式 + LLM流式输出）</li>
+    <li><strong>反哺机制</strong>：顾问采纳/修改/忽略的反馈数据回流知识库，持续优化推荐质量</li>
+  </ul>
+</div>
+
+<h2><span class="num">2</span> 技术选型建议</h2>
+
+<table>
+  <tr>
+    <th>模块</th>
+    <th>推荐方案</th>
+    <th>备选</th>
+    <th>选型理由</th>
+  </tr>
+  <tr>
+    <td>ASR语音转写</td>
+    <td>腾讯云ASR（实时+离线）</td>
+    <td>阿里云/讯飞</td>
+    <td>企微生态内集成成本低，实时流式ASR延迟低</td>
+  </tr>
+  <tr>
+    <td>LLM推理</td>
+    <td>DeepSeek-V3 / Qwen2.5-72B</td>
+    <td>GLM-4 / 私有化部署</td>
+    <td>性价比高，中文话术理解能力强，支持私有化</td>
+  </tr>
+  <tr>
+    <td>Embedding模型</td>
+    <td>bge-m3 / text-embedding-v3</td>
+    <td>本地部署</td>
+    <td>中文语义检索效果优，支持混合检索</td>
+  </tr>
+  <tr>
+    <td>向量数据库</td>
+    <td>Milvus（自建）/ 腾讯云VectorDB</td>
+    <td>Qdrant / Chroma</td>
+    <td>支持百万级向量，元数据过滤能力强</td>
+  </tr>
+  <tr>
+    <td>后端框架</td>
+    <td>Python FastAPI + Celery</td>
+    <td>Go + Redis</td>
+    <td>AI生态丰富，异步任务处理蒸馏管道</td>
+  </tr>
+  <tr>
+    <td>前端</td>
+    <td>Vue3 + WebSocket</td>
+    <td>React</td>
+    <td>企微侧边栏集成方便，WebSocket支持实时建议推送</td>
+  </tr>
+  <tr>
+    <td>消息队列</td>
+    <td>Redis Streams / Kafka</td>
+    <td>RabbitMQ</td>
+    <td>实时建议场景的低延迟消息推送</td>
+  </tr>
+  <tr>
+    <td>部署</td>
+    <td>腾讯云容器服务TKE</td>
+    <td>自建K8s</td>
+    <td>与企微/CRM同云部署，网络延迟低</td>
+  </tr>
+</table>
+
+<div class="highlight">
+  <b>省钱策略：</b> ASR离线转写用便宜的长录音接口（约0.1元/分钟），实时建议场景才用流式ASR。LLM调用区分档次——蒸馏管道用72B大模型保证质量，实时建议用14B小模型保证延迟。蒸馏是一次性成本，实时建议是持续成本。
+</div>
+
+<h2><span class="num">3</span> 实施路线图</h2>
+
+<p>整体分三期推进，每期都有可独立交付的MVP，避免"建了半年不能用"的局面。</p>
+
+<div class="phase phase-1">
+  <div class="phase-label">
+    <span>第一期</span>
+    <b>1-2月</b>
+  </div>
+  <div class="phase-body">
+    <h4>知识库冷启动 + AI陪练MVP</h4>
+    <p><strong>目标：</strong>完成数据采集管道搭建，首批蒸馏100-200条top销冠话术入库，陪练系统跑通基础流程</p>
+    <p>· 对接企微会话API + 呼叫中心录音接口</p>
+    <p>· 搭建ASR转写 + LLM蒸馏管道（离线批处理）</p>
+    <p>· 建立向量数据库 + 话术模板库基础结构</p>
+    <p>· AI陪练MVP：支持3个核心场景（小学焦虑家长/初中升学/价格异议），多轮对话 + 基础评分</p>
+    <p>· <strong>交付物：</strong>陪练Web应用 + 知识库管理后台</p>
+  </div>
+</div>
+
+<div class="phase phase-2">
+  <div class="phase-label">
+    <span>第二期</span>
+    <b>3-4月</b>
+  </div>
+  <div class="phase-body">
+    <h4>实时建议引擎 + 陪练进阶</h4>
+    <p><strong>目标：</strong>实时建议引擎上线（先聊天场景，后电话场景），陪练系统扩充场景库和评分维度</p>
+    <p>· 企微侧边栏应用开发：实时消息分析 + 策略卡片推送</p>
+    <p>· 流式ASR + 流式LLM推理管道搭建（延迟控制3-5秒）</p>
+    <p>· 知识库扩充至500+话术模板，覆盖8-10个核心场景</p>
+    <p>· 陪练进阶：难度分级、弱点针对性训练、团队排行榜</p>
+    <p>· <strong>交付物：</strong>企微侧边栏实时建议插件 + 陪练2.0</p>
+  </div>
+</div>
+
+<div class="phase phase-3">
+  <div class="phase-label">
+    <span>第三期</span>
+    <b>5-6月</b>
+  </div>
+  <div class="phase-body">
+    <h4>闭环优化 + 规模化</h4>
+    <p><strong>目标：</strong>建立"实战数据 → 知识库 → 陪练 → 实战"的闭环迭代机制，全量推广</p>
+    <p>· 顾问采纳率/转化率数据回流分析，优化推荐算法</p>
+    <p>· 管理后台完善：顾问能力画像、知识库效果看板、ROI分析</p>
+    <p>· 电话场景实时建议上线（呼叫中心集成）</p>
+    <p>· 全团队推广 + 培训体系搭建（新员工入职必修陪练课）</p>
+    <p>· <strong>交付物：</strong>管理后台3.0 + 电话实时建议 + 运营SOP</p>
+  </div>
+</div>
+
+<h2><span class="num">4</span> 团队配置建议</h2>
+
+<table>
+  <tr>
+    <th>角色</th>
+    <th>人数</th>
+    <th>职责</th>
+    <th>关键能力</th>
+  </tr>
+  <tr>
+    <td>项目经理 / PM</td>
+    <td>1</td>
+    <td>需求管理、进度把控、跨部门协调</td>
+    <td>懂业务+懂技术，K12私域经验</td>
+  </tr>
+  <tr>
+    <td>后端工程师</td>
+    <td>2</td>
+    <td>数据管道、API、企微集成、实时推理服务</td>
+    <td>Python/FastAPI、消息队列、WebSocket</td>
+  </tr>
+  <tr>
+    <td>AI算法工程师</td>
+    <td>1-2</td>
+    <td>蒸馏提示词工程、RAG优化、模型调优</td>
+    <td>LLM应用、Prompt Engineering、RAG</td>
+  </tr>
+  <tr>
+    <td>前端工程师</td>
+    <td>1-2</td>
+    <td>陪练Web应用、企微侧边栏、管理后台</td>
+    <td>Vue3、WebSocket、企微JS-SDK</td>
+  </tr>
+  <tr>
+    <td>业务专家 / 标注员</td>
+    <td>1-2</td>
+    <td>话术审核、场景设计、评分标准制定</td>
+    <td>资深销冠或销售管理经验</td>
+  </tr>
+  <tr>
+    <td>运维 / DevOps</td>
+    <td>0.5（兼）</td>
+    <td>容器部署、监控、成本管控</td>
+    <td>K8s/腾讯云、CI/CD</td>
+  </tr>
+</table>
+
+<div class="card card-t">
+  <h3>关键提醒：业务专家是成败关键</h3>
+  <p style="margin-bottom:0">技术团队再强，没有懂业务的专家参与标注和审核，蒸馏出来的知识库就是"正确的废话"。建议从现有top顾问中抽调1人，或由销售主管兼任，每周投入至少2天参与话术审核和场景设计。<strong>这个角色的投入度直接决定知识库的质量上限。</strong></p>
+</div>
+
+<h2><span class="num">5</span> 成本估算</h2>
+
+<div class="metric-row">
+  <div class="metric">
+    <div class="num">8-12w</div>
+    <div class="label">第一期开发（1-2月）</div>
+  </div>
+  <div class="metric">
+    <div class="num">6-8w</div>
+    <div class="label">第二期开发（3-4月）</div>
+  </div>
+  <div class="metric">
+    <div class="num">4-6w</div>
+    <div class="label">第三期开发（5-6月）</div>
+  </div>
+</div>
+
+<p>以上为人力成本估算（按内部团队），不含云资源费用。云资源月度成本预估：</p>
+
+<table>
+  <tr>
+    <th>资源项</th>
+    <th>月成本预估</th>
+    <th>说明</th>
+  </tr>
+  <tr>
+    <td>ASR转写</td>
+    <td>2,000-5,000元</td>
+    <td>按月均500-1000通录音计算，离线转写0.1元/分钟</td>
+  </tr>
+  <tr>
+    <td>LLM推理</td>
+    <td>3,000-8,000元</td>
+    <td>蒸馏批处理（一次性）+ 实时建议推理（持续）</td>
+  </tr>
+  <tr>
+    <td>向量数据库 + 存储</td>
+    <td>500-1,500元</td>
+    <td>初期数据量小，后续按量增长</td>
+  </tr>
+  <tr>
+    <td>服务器/容器</td>
+    <td>2,000-4,000元</td>
+    <td>2-3台应用服务器 + 1台GPU推理机</td>
+  </tr>
+  <tr>
+    <td><strong>合计</strong></td>
+    <td><strong>7,500-18,500元/月</strong></td>
+    <td>随使用量线性增长</td>
+  </tr>
+</table>
+
+<div class="highlight">
+  <b>成本控制要点：</b> 如果预算紧张，第一期可以先不做实时建议（最贵的部分），先把知识库建起来 + 陪练跑通。实时建议是锦上添花，知识库和陪练才是核心资产。另外，ASR和LLM的成本会随着调用量自然下降——蒸馏是一次性的，知识库建好后就不再需要大规模蒸馏。
+</div>
+
+<h2><span class="num">6</span> 数据合规与安全</h2>
+
+<div class="card">
+  <h3>必须解决的合规问题</h3>
+  <table>
+    <tr>
+      <th>风险点</th>
+      <th>应对措施</th>
+    </tr>
+    <tr>
+      <td>用户隐私数据泄露</td>
+      <td>所有原始对话在入蒸馏管道前先做<strong>PII脱敏</strong>（手机号、姓名、身份证号等用NER识别后替换）</td>
+    </tr>
+    <tr>
+      <td>录音授权合规</td>
+      <td>确认呼叫中心录音已有用户授权；企微聊天数据使用需符合企微数据使用规范</td>
+    </tr>
+    <tr>
+      <td>未成年人数据保护</td>
+      <td>K12场景下用户是家长（成年人），但对话中可能涉及未成年人信息，需额外脱敏</td>
+    </tr>
+    <tr>
+      <td>数据存储安全</td>
+      <td>原始录音加密存储、知识库访问权限分级（顾问只能看话术模板，不能看原始对话）</td>
+    </tr>
+    <tr>
+      <td>LLM数据安全</td>
+      <td>蒸馏使用私有化部署模型或可信API，确保对话数据不外泄给第三方</td>
+    </tr>
+  </table>
+</div>
+
+<h2><span class="num">7</span> 关键风险与应对</h2>
+
+<table>
+  <tr>
+    <th>风险</th>
+    <th>影响</th>
+    <th>应对</th>
+  </tr>
+  <tr>
+    <td>ASR准确率不足</td>
+    <td>蒸馏出的话术质量差，"垃圾进垃圾出"</td>
+    <td>优先选普通话清晰的录音做首批蒸馏；人工审核第一轮输出；逐步积累方言/口音训练数据</td>
+  </tr>
+  <tr>
+    <td>知识库"正确但无用"</td>
+    <td>话术模板看起来都对，但实际用不出来</td>
+    <td>业务专家深度参与标注，确保每条话术都有<strong>适用场景+禁忌事项+原文出处</strong>；陪练中验证可用性</td>
+  </tr>
+  <tr>
+    <td>实时建议延迟超标</td>
+    <td>顾问等不及，建议变成"事后诸葛亮"</td>
+    <td>流式ASR + 小模型推理 + 预计算常见场景话术；设定3秒超时降级为"稍后总结"</td>
+  </tr>
+  <tr>
+    <td>顾问抵触心理</td>
+    <td>觉得被监控，不愿意使用</td>
+    <td>定位为"赋能工具"而非"监控工具"；先从陪练切入（非实战场景）；数据不直接用于绩效</td>
+  </tr>
+  <tr>
+    <td>知识库维护衰减</td>
+    <td>话术过时，不再适应当前市场</td>
+    <td>建立月度知识库review机制；自动标注低使用率/低采纳率条目提醒更新</td>
+  </tr>
+</table>
+
+<h2><span class="num">8</span> 待确认问题</h2>
+
+<p>以下问题需要老大拍板，直接影响方案细化和排期：</p>
+
+<ol class="question-list">
+  <li><strong>现有系统对接情况</strong>：目前用的是哪个呼叫中心/电话系统？企微还是个人微信做私域？CRM是什么系统？这些系统的API开放程度如何？</li>
+  <li><strong>录音数据量</strong>：目前每月大概有多少通顾问电话？其中top顾问占比多少？现有录音保存多久了？</li>
+  <li><strong>预算范围</strong>：整体预算大概在什么量级？是自建团队还是外包？如果预算有限，优先做哪个模块？</li>
+  <li><strong>团队技术能力</strong>：内部有没有研发团队？技术栈是什么？还是需要完全外包？</li>
+  <li><strong>上线时间要求</strong>：有没有明确的deadline？比如赶在某个招生旺季前上线？</li>
+  <li><strong>合规现状</strong>：电话录音的合规授权目前是怎么做的？企微聊天数据的使用有没有合规审批？</li>
+  <li><strong>销冠配合度</strong>：top顾问愿意配合标注和录音分析吗？需不需要激励机制？</li>
+</ol>
+
+<div class="card card-l" style="margin-top:32px">
+  <h3 style="margin-bottom:8px">下一步建议</h3>
+  <p style="margin-bottom:4px">1. 先回答上面的关键问题，我来细化方案和排期</p>
+  <p style="margin-bottom:4px">2. 如果现有条件允许，建议先用1-2周做<strong>概念验证（POC）</strong>：拿10通销冠录音 → ASR转写 → LLM蒸馏 → 看看产出的话术质量是否达标</p>
+  <p style="margin-bottom:0">3. POC通过后，按三期路线图正式启动</p>
+</div>
+
+<div class="divider"></div>
+<p style="text-align:center; color:var(--text-3); font-size:13px;">
+  销冠智能体建设方案 · 2026.08<br>
+  数据驱动 · 持续迭代 · 从经验到系统
+</p>
+
+</div>
+</body>
+</html>
